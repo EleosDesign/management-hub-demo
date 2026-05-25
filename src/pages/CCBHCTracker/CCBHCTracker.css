@@ -721,6 +721,26 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
+.ccbhc-th-sort {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.ccbhc-th-sort:hover {
+  color: #374151;
+}
+
+.ccbhc-sort-icon {
+  font-size: 10px;
+  opacity: 0.5;
+}
+
+.ccbhc-th-sort:hover .ccbhc-sort-icon,
+.ccbhc-th-sort.ccbhc-th-sort--active .ccbhc-sort-icon {
+  opacity: 1;
+}
+
 .ccbhc-table td {
   padding: 10px 16px;
   color: #374151;

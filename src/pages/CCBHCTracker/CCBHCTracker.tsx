@@ -414,9 +414,57 @@ function CaseloadView({ onClientClick }: { onClientClick: (id: string) => void }
   );
 }
 
+// ─── Sorting helpers ──────────────────────────────────────────────────────────
+
+type SortDir = 'asc' | 'desc';
+
+function useSortState<T extends string>(defaultCol: T, defaultDir: SortDir = 'asc') {
+  const [col, setCol] = useState<T>(defaultCol);
+  const [dir, setDir] = useState<SortDir>(defaultDir);
+  function toggle(next: T) {
+    if (next === col) setDir(d => (d === 'asc' ? 'desc' : 'asc'));
+    else { setCol(next); setDir('asc'); }
+  }
+  return { col, dir, toggle };
+}
+
+function SortTh({ label, colKey, active, dir, onSort, className }: {
+  label: string; colKey: string; active: boolean; dir: SortDir;
+  onSort: (k: string) => void; className?: string;
+}) {
+  return (
+    <th className={`ccbhc-th-sort${className ? ` ${className}` : ''}`} onClick={() => onSort(colKey)}>
+      {label}
+      <span className="ccbhc-sort-icon">
+        {active ? (dir === 'asc' ? ' ↑' : ' ↓') : ' ↕'}
+      </span>
+    </th>
+  );
+}
+
 // ─── Screen 2 — Organization View ────────────────────────────────────────────
 
 function OrgView() {
+  type TeamCol = 'team' | 'county' | 'caseload' | 'triggeredPct' | 'atRisk';
+  type RiskCol = 'id' | 'team' | 'primaryRisk' | 'daysRemaining';
+
+  const teamSort = useSortState<TeamCol>('triggeredPct', 'asc');
+  const riskSort = useSortState<RiskCol>('daysRemaining', 'asc');
+
+  const sortedTeams = [...TEAM_ROWS].sort((a, b) => {
+    const mul = teamSort.dir === 'asc' ? 1 : -1;
+    const k = teamSort.col;
+    if (k === 'team' || k === 'county') return mul * a[k].localeCompare(b[k]);
+    return mul * ((a[k] as number) - (b[k] as number));
+  });
+
+  const sortedRisk = [...ORG_AT_RISK].sort((a, b) => {
+    const mul = riskSort.dir === 'asc' ? 1 : -1;
+    const k = riskSort.col;
+    if (k === 'id' || k === 'team' || k === 'primaryRisk') return mul * a[k].localeCompare(b[k]);
+    return mul * (a[k] - b[k]);
+  });
+
   return (
     <div className="ccbhc-layout">
       <div className="ccbhc-main">
@@ -451,12 +499,15 @@ function OrgView() {
             <table className="ccbhc-table">
               <thead>
                 <tr>
-                  <th>Team</th><th>County</th><th>Caseload</th><th>Trigger rate</th>
-                  <th>At-risk</th>
+                  <SortTh label="Team"         colKey="team"         active={teamSort.col === 'team'}         dir={teamSort.dir} onSort={teamSort.toggle} />
+                  <SortTh label="County"       colKey="county"       active={teamSort.col === 'county'}       dir={teamSort.dir} onSort={teamSort.toggle} />
+                  <SortTh label="Caseload"     colKey="caseload"     active={teamSort.col === 'caseload'}     dir={teamSort.dir} onSort={teamSort.toggle} />
+                  <SortTh label="Trigger rate" colKey="triggeredPct" active={teamSort.col === 'triggeredPct'} dir={teamSort.dir} onSort={teamSort.toggle} />
+                  <SortTh label="At-risk"      colKey="atRisk"       active={teamSort.col === 'atRisk'}       dir={teamSort.dir} onSort={teamSort.toggle} />
                 </tr>
               </thead>
               <tbody>
-                {TEAM_ROWS.map(row => (
+                {sortedTeams.map(row => (
                   <tr key={row.team} className={row.triggeredPct < 85 ? 'ccbhc-table__row--critical' : ''}>
                     <td className="ccbhc-table__team">{row.team}</td>
                     <td>{row.county}</td>
@@ -483,15 +534,21 @@ function OrgView() {
         <div className="ccbhc-card">
           <div className="ccbhc-card__header">
             <span className="ccbhc-card__title">Top at-risk clients — org-wide</span>
-            <span className="ccbhc-card__sub">Sorted by urgency</span>
+            <span className="ccbhc-card__sub">Click a column to sort</span>
           </div>
           <div className="ccbhc-table-wrap">
             <table className="ccbhc-table">
               <thead>
-                <tr><th>Client ID</th><th>Team</th><th>Primary risk</th><th>Days left</th><th>Action</th></tr>
+                <tr>
+                  <SortTh label="Client ID"    colKey="id"           active={riskSort.col === 'id'}           dir={riskSort.dir} onSort={riskSort.toggle} />
+                  <SortTh label="Team"         colKey="team"         active={riskSort.col === 'team'}         dir={riskSort.dir} onSort={riskSort.toggle} />
+                  <SortTh label="Primary risk" colKey="primaryRisk"  active={riskSort.col === 'primaryRisk'}  dir={riskSort.dir} onSort={riskSort.toggle} />
+                  <SortTh label="Days left"    colKey="daysRemaining" active={riskSort.col === 'daysRemaining'} dir={riskSort.dir} onSort={riskSort.toggle} />
+                  <th>Action</th>
+                </tr>
               </thead>
               <tbody>
-                {ORG_AT_RISK.map(c => (
+                {sortedRisk.map(c => (
                   <tr key={c.id}>
                     <td className="ccbhc-table__id">{c.id}</td>
                     <td>{c.team}</td>
