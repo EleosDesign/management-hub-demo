@@ -203,6 +203,74 @@ const ORG_AT_RISK: OrgAtRiskClient[] = [
   { id: 'CL-10519', team: 'Tulsa Team 4',    primaryRisk: 'Treatment plan expires in 14 days',           daysRemaining: 6, action: 'Schedule triggering service' },
 ];
 
+// ─── Alert data ───────────────────────────────────────────────────────────────
+
+interface AlertItem {
+  icon: string;
+  title: string;
+  desc: string;
+  status: string;
+  statusType: 'running' | 'done';
+  variant: 'red' | 'neutral';
+}
+
+const REAL_TIME_ALERTS: AlertItem[] = [
+  {
+    icon: '⚡', variant: 'red',
+    title: 'Medicaid loss: CL-10238',
+    desc: 'Retro-eligibility workflow auto-initiated — 8-day recovery window open',
+    status: '● Running', statusType: 'running',
+  },
+  {
+    icon: '↻', variant: 'neutral',
+    title: 'Wrong payer detected: CL-10774',
+    desc: 'Auto-routed to SDP Jamie Lin — CCBHC service scheduled for May 28',
+    status: '✓ Scheduled', statusType: 'done',
+  },
+  {
+    icon: '📄', variant: 'neutral',
+    title: 'PA expiring in 48h: CL-11042',
+    desc: 'SoonerCare prior auth renewal auto-submitted to Medicaid portal',
+    status: '✓ Submitted', statusType: 'done',
+  },
+  {
+    icon: '⚡', variant: 'red',
+    title: 'Medicaid loss: CL-11402',
+    desc: 'Coverage lapsed May 19 — retro-eligibility workflow started, 12-day window',
+    status: '● Running', statusType: 'running',
+  },
+  {
+    icon: '📋', variant: 'neutral',
+    title: 'Caseload audit: Delaware Team 1',
+    desc: '4 documentation gaps auto-flagged — findings emailed to ITM Sam Whitcomb',
+    status: '✓ Sent', statusType: 'done',
+  },
+  {
+    icon: '↻', variant: 'neutral',
+    title: 'Treatment plan renewed: CL-11819',
+    desc: 'Renewal request routed to Morgan Reyes — signature pending',
+    status: '● Awaiting signature', statusType: 'running',
+  },
+  {
+    icon: '✉', variant: 'neutral',
+    title: 'Day-10 chase batch sent',
+    desc: '23 clinicians notified — 31 clients still untriggered with 6 days remaining',
+    status: '✓ Delivered', statusType: 'done',
+  },
+  {
+    icon: '📄', variant: 'neutral',
+    title: 'ECHO form auto-filed: Pawnee Team 2',
+    desc: 'May 2026 financial reporting submitted to SoonerCare portal',
+    status: '✓ Filed', statusType: 'done',
+  },
+  {
+    icon: '🔍', variant: 'neutral',
+    title: 'Duplicate enrollment: CL-30612',
+    desc: 'Client active in both Delaware Team 1 and Pawnee Team 1 — flagged for TSS review',
+    status: '● Needs review', statusType: 'running',
+  },
+];
+
 const ACTIVITY_FEED: ActivityItem[] = [
   { time: '08:14', text: 'Sent 23 chase emails to clinicians on day-10 triggering reminder',         type: 'email'       },
   { time: '09:32', text: 'Detected Medicaid loss for CL-11402 — initiated retro-eligibility flow',  type: 'eligibility' },
@@ -565,33 +633,26 @@ function OrgView() {
 
       {/* Right rail */}
       <aside className="ccbhc-rail">
-        <div className="ccbhc-rail__header">Real-time alerts</div>
-
-        <div className="ccbhc-alert ccbhc-alert--red">
-          <div className="ccbhc-alert__icon">⚡</div>
-          <div className="ccbhc-alert__body">
-            <div className="ccbhc-alert__title">Medicaid loss: CL-10238</div>
-            <div className="ccbhc-alert__desc">Retro-eligibility workflow auto-initiated — 8-day recovery window open</div>
-            <div className="ccbhc-alert__status"><span className="ccbhc-status-running">● Running</span></div>
-          </div>
+        <div className="ccbhc-rail__header">
+          Real-time alerts
+          <span className="ccbhc-rail__count">{REAL_TIME_ALERTS.length}</span>
         </div>
 
-        <div className="ccbhc-alert ccbhc-alert--neutral">
-          <div className="ccbhc-alert__icon">↻</div>
-          <div className="ccbhc-alert__body">
-            <div className="ccbhc-alert__title">Wrong payer detected: CL-10774</div>
-            <div className="ccbhc-alert__desc">Auto-routed to SDP Jamie Lin — CCBHC service scheduled for May 28</div>
-            <div className="ccbhc-alert__status"><span className="ccbhc-status-done">✓ Scheduled</span></div>
-          </div>
-        </div>
-
-        <div className="ccbhc-alert ccbhc-alert--neutral">
-          <div className="ccbhc-alert__icon">📄</div>
-          <div className="ccbhc-alert__body">
-            <div className="ccbhc-alert__title">PA expiring in 48h: CL-11042</div>
-            <div className="ccbhc-alert__desc">SoonerCare prior auth renewal auto-submitted to Medicaid portal</div>
-            <div className="ccbhc-alert__status"><span className="ccbhc-status-done">✓ Submitted</span></div>
-          </div>
+        <div className="ccbhc-alerts-scroll">
+          {REAL_TIME_ALERTS.map((a, i) => (
+            <div key={i} className={`ccbhc-alert ccbhc-alert--${a.variant}`}>
+              <div className="ccbhc-alert__icon">{a.icon}</div>
+              <div className="ccbhc-alert__body">
+                <div className="ccbhc-alert__title">{a.title}</div>
+                <div className="ccbhc-alert__desc">{a.desc}</div>
+                <div className="ccbhc-alert__status">
+                  <span className={a.statusType === 'running' ? 'ccbhc-status-running' : 'ccbhc-status-done'}>
+                    {a.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
         <div className="ccbhc-rail__divider" />
