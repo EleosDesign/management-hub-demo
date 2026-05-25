@@ -580,61 +580,48 @@
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  padding: 18px 20px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
-
-.ccbhc-org-metric-card--amber { border-top: 3px solid #f59e0b; }
-.ccbhc-org-metric-card--green { border-top: 3px solid #22c55e; }
 
 .ccbhc-org-metric-card__label {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #9ca3af;
+  margin-bottom: 2px;
 }
 
 .ccbhc-org-metric-card__value {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
   color: #0f172a;
   line-height: 1.1;
 }
 
-.ccbhc-org-metric-card__desc {
-  font-size: 12px;
-  color: #64748b;
-}
-
-.ccbhc-org-metric-card__trend--up {
-  font-size: 12px;
-  color: #16a34a;
-  font-weight: 600;
+.ccbhc-org-metric-card__meta {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .ccbhc-org-metric-card__link {
   font-family: inherit;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: #1e40af;
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
-  text-align: left;
-}
-
-.ccbhc-org-metric-card__sub {
-  font-size: 11px;
-  color: #16a34a;
-  font-weight: 600;
-}
-
-.ccbhc-celebration {
-  margin-right: 4px;
+  white-space: nowrap;
 }
 
 /* ── Progress bar ── */
@@ -749,12 +736,8 @@
   background: #f8f9fb;
 }
 
-.ccbhc-table__row--critical td {
-  background: #fff9f9;
-}
-
-.ccbhc-table__row--critical:hover td {
-  background: #fff0f0;
+.ccbhc-table__row--critical .ccbhc-pct {
+  color: #dc2626;
 }
 
 .ccbhc-table__team {
@@ -821,11 +804,10 @@
 
 .ccbhc-pct {
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
+  color: #374151;
 }
-.ccbhc-pct--green { color: #16a34a; }
-.ccbhc-pct--amber { color: #b45309; }
-.ccbhc-pct--red   { color: #dc2626; }
+.ccbhc-pct--red { color: #dc2626; }
 
 /* ── Traffic dot ── */
 

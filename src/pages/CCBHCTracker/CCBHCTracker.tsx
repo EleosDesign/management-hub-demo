@@ -425,32 +425,19 @@ function OrgView() {
           <div className="ccbhc-org-metric-card">
             <div className="ccbhc-org-metric-card__label">Org trigger rate — May 2026</div>
             <div className="ccbhc-org-metric-card__value">94.2%</div>
-            <div className="ccbhc-org-metric-card__target">
-              <div className="ccbhc-progress-bar">
-                <div className="ccbhc-progress-bar__fill" style={{ width: '94.2%' }} />
-                <div className="ccbhc-progress-bar__target" style={{ left: '98%' }} />
-              </div>
-              <div className="ccbhc-progress-bar__labels">
-                <span>0%</span>
-                <span className="ccbhc-progress-bar__target-label">Target: 98%</span>
-                <span>100%</span>
-              </div>
-            </div>
-            <div className="ccbhc-org-metric-card__trend ccbhc-org-metric-card__trend--up">↑ +1.8% vs last month</div>
+            <div className="ccbhc-org-metric-card__meta">↑ +1.8% vs last month · target 98%</div>
           </div>
 
-          <div className="ccbhc-org-metric-card ccbhc-org-metric-card--amber">
+          <div className="ccbhc-org-metric-card">
             <div className="ccbhc-org-metric-card__label">Revenue at risk</div>
             <div className="ccbhc-org-metric-card__value">47 clients</div>
-            <div className="ccbhc-org-metric-card__desc">Not yet triggered with 6 days remaining</div>
-            <button className="ccbhc-org-metric-card__link">See breakdown →</button>
+            <div className="ccbhc-org-metric-card__meta">Not yet triggered · 6 days remaining <button className="ccbhc-org-metric-card__link">See breakdown →</button></div>
           </div>
 
-          <div className="ccbhc-org-metric-card ccbhc-org-metric-card--green">
+          <div className="ccbhc-org-metric-card">
             <div className="ccbhc-org-metric-card__label">Retro-eligibility recoveries</div>
             <div className="ccbhc-org-metric-card__value">12 clients</div>
-            <div className="ccbhc-org-metric-card__desc"><span className="ccbhc-celebration">🎉</span> Recovered this month</div>
-            <div className="ccbhc-org-metric-card__sub">+3 vs April</div>
+            <div className="ccbhc-org-metric-card__meta">Recovered this month · +3 vs April</div>
           </div>
         </div>
 
@@ -475,11 +462,8 @@ function OrgView() {
                     <td>{row.county}</td>
                     <td>{row.caseload}</td>
                     <td>
-                      <div className="ccbhc-inline-bar">
-                        <div className="ccbhc-inline-bar__fill" style={{ width: `${row.triggeredPct}%`, background: row.triggeredPct >= 97 ? '#22c55e' : row.triggeredPct >= 92 ? '#f59e0b' : '#ef4444' }} />
-                      </div>
                       <div className="ccbhc-rate-row">
-                        <span className={`ccbhc-pct ${row.triggeredPct < 85 ? 'ccbhc-pct--red' : row.triggeredPct < 97 ? 'ccbhc-pct--amber' : 'ccbhc-pct--green'}`}>
+                        <span className={row.triggeredPct < 85 ? 'ccbhc-pct ccbhc-pct--red' : 'ccbhc-pct'}>
                           {row.triggeredPct}%
                         </span>
                         <TrendIcon trend={row.trend} />
