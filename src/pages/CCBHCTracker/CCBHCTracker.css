@@ -511,6 +511,18 @@
   font-weight: 600;
 }
 
+.ccbhc-status-running {
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.ccbhc-status-done {
+  color: #16a34a;
+  font-weight: 600;
+  font-size: 11px;
+}
+
 .ccbhc-alert-action-btn {
   font-family: inherit;
   font-size: 11px;
@@ -1348,4 +1360,40 @@
 
 .ccbhc-feed-item__line {
   display: none;
+}
+
+/* ── Pending review (caseload rail) ── */
+
+.ccbhc-pending-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ccbhc-pending-item {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ccbhc-pending-item__id {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.ccbhc-pending-item__desc {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.ccbhc-pending-empty {
+  font-size: 12px;
+  color: #9ca3af;
+  padding: 4px 0;
 }

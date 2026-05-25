@@ -379,35 +379,20 @@ function CaseloadView({ onClientClick }: { onClientClick: (id: string) => void }
 
       {/* ── Right rail ── */}
       <aside className="ccbhc-rail">
-        <div className="ccbhc-rail__header">Real-time alerts</div>
-
-        <div className="ccbhc-alert ccbhc-alert--red">
-          <div className="ccbhc-alert__icon">⚡</div>
-          <div className="ccbhc-alert__body">
-            <div className="ccbhc-alert__title">Medicaid loss detected: CL-10238</div>
-            <div className="ccbhc-alert__desc">Retro-eligibility workflow started</div>
-            <div className="ccbhc-alert__status">
-              <span className="ccbhc-in-progress">● In progress</span>
+        <div className="ccbhc-rail__header">Pending review</div>
+        <div className="ccbhc-pending-list">
+          {clinician.notTriggered.filter(c => c.alert).map(c => (
+            <div key={c.id} className="ccbhc-pending-item">
+              <div className="ccbhc-pending-item__id">{c.id}</div>
+              <div className="ccbhc-pending-item__desc">
+                {c.alert === 'medicaid-loss' ? 'Retro-eligibility recommendation ready' : 'Wrong-payer routing recommendation ready'}
+              </div>
+              <button className="ccbhc-alert-link" onClick={() => onClientClick(c.id)}>Review →</button>
             </div>
-          </div>
-        </div>
-
-        <div className="ccbhc-alert ccbhc-alert--amber">
-          <div className="ccbhc-alert__icon">⏱</div>
-          <div className="ccbhc-alert__body">
-            <div className="ccbhc-alert__title">Treatment plan expiring: CL-10519</div>
-            <div className="ccbhc-alert__desc">Expires in 14 days — no appointment scheduled</div>
-            <button className="ccbhc-alert-action-btn">Notify clinician</button>
-          </div>
-        </div>
-
-        <div className="ccbhc-alert ccbhc-alert--neutral">
-          <div className="ccbhc-alert__icon">📋</div>
-          <div className="ccbhc-alert__body">
-            <div className="ccbhc-alert__title">Caseload audit: 1 finding</div>
-            <div className="ccbhc-alert__desc">CL-11198 missing SSN on file</div>
-            <button className="ccbhc-alert-link">View →</button>
-          </div>
+          ))}
+          {clinician.notTriggered.filter(c => c.alert).length === 0 && (
+            <div className="ccbhc-pending-empty">No pending reviews</div>
+          )}
         </div>
 
         <div className="ccbhc-rail__divider" />
@@ -538,6 +523,36 @@ function OrgView() {
 
       {/* Right rail */}
       <aside className="ccbhc-rail">
+        <div className="ccbhc-rail__header">Real-time alerts</div>
+
+        <div className="ccbhc-alert ccbhc-alert--red">
+          <div className="ccbhc-alert__icon">⚡</div>
+          <div className="ccbhc-alert__body">
+            <div className="ccbhc-alert__title">Medicaid loss: CL-10238</div>
+            <div className="ccbhc-alert__desc">Retro-eligibility workflow auto-initiated — 8-day recovery window open</div>
+            <div className="ccbhc-alert__status"><span className="ccbhc-status-running">● Running</span></div>
+          </div>
+        </div>
+
+        <div className="ccbhc-alert ccbhc-alert--neutral">
+          <div className="ccbhc-alert__icon">↻</div>
+          <div className="ccbhc-alert__body">
+            <div className="ccbhc-alert__title">Wrong payer detected: CL-10774</div>
+            <div className="ccbhc-alert__desc">Auto-routed to SDP Jamie Lin — CCBHC service scheduled for May 28</div>
+            <div className="ccbhc-alert__status"><span className="ccbhc-status-done">✓ Scheduled</span></div>
+          </div>
+        </div>
+
+        <div className="ccbhc-alert ccbhc-alert--neutral">
+          <div className="ccbhc-alert__icon">📄</div>
+          <div className="ccbhc-alert__body">
+            <div className="ccbhc-alert__title">PA expiring in 48h: CL-11042</div>
+            <div className="ccbhc-alert__desc">SoonerCare prior auth renewal auto-submitted to Medicaid portal</div>
+            <div className="ccbhc-alert__status"><span className="ccbhc-status-done">✓ Submitted</span></div>
+          </div>
+        </div>
+
+        <div className="ccbhc-rail__divider" />
         <div className="ccbhc-rail__header">Eleos activity today</div>
         <div className="ccbhc-feed">
           {ACTIVITY_FEED.map((item, i) => (
@@ -789,7 +804,7 @@ function TriageDetail({ clientId, clinicianName, onBack }: { clientId: string; c
 type MainView = 'caseload' | 'org';
 
 export default function CCBHCTracker() {
-  const [view, setView] = useState<MainView>('caseload');
+  const [view, setView] = useState<MainView>('org');
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
   const [selectedClinicianName, setSelectedClinicianName] = useState(CLINICIANS[0].name);
 
@@ -815,8 +830,8 @@ export default function CCBHCTracker() {
 
       {!selectedClient && (
         <div className="ccbhc-tabs">
-          <button className={`ccbhc-tab${view === 'caseload' ? ' ccbhc-tab--active' : ''}`} onClick={() => setView('caseload')}>Caseload view</button>
           <button className={`ccbhc-tab${view === 'org' ? ' ccbhc-tab--active' : ''}`} onClick={() => setView('org')}>Organization view</button>
+          <button className={`ccbhc-tab${view === 'caseload' ? ' ccbhc-tab--active' : ''}`} onClick={() => setView('caseload')}>Caseload view</button>
         </div>
       )}
 
