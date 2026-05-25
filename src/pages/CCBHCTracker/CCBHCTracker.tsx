@@ -20,6 +20,18 @@ interface Client {
   retroWindow?: number;
 }
 
+interface ClinicianRecord {
+  name: string;
+  credential: string;
+  team: string;
+  county: string;
+  caseload: number;
+  triggeredCount: number;
+  atRiskCount: number;
+  notTriggered: Client[];
+  triggered: Client[];
+}
+
 interface TeamRow {
   team: string;
   county: string;
@@ -43,71 +55,132 @@ interface ActivityItem {
   type: 'email' | 'eligibility' | 'audit' | 'routing';
 }
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
+// ─── Per-clinician data ───────────────────────────────────────────────────────
 
-const CLINICIANS = [
-  { name: 'Morgan Reyes', credential: 'LCSW', team: 'Team 4', county: 'Tulsa County' },
-  { name: 'Avery Patel',  credential: 'LPC',  team: 'Team 2', county: 'Pawnee County' },
-  { name: 'Sam Whitcomb', credential: 'BHC',  team: 'Team 1', county: 'Delaware County' },
-];
-
-const NOT_TRIGGERED: Client[] = [
+const CLINICIANS: ClinicianRecord[] = [
   {
-    id: 'CL-10238', initials: 'JS',
-    medicaidStatus: 'Lost',
-    treatmentPlanEnd: 'Jun 14, 2026',
-    lastServiceDate: 'May 8, 2026',
-    daysRemaining: 6,
-    riskReason: 'Lost Medicaid May 12 — retro window: 8 days remaining',
-    status: 'not-triggered',
-    alert: 'medicaid-loss',
-    retroWindow: 8,
+    name: 'Morgan Reyes', credential: 'LCSW', team: 'Team 4', county: 'Tulsa County',
+    caseload: 32, triggeredCount: 27, atRiskCount: 3,
+    notTriggered: [
+      {
+        id: 'CL-10238', initials: 'JS', medicaidStatus: 'Lost',
+        treatmentPlanEnd: 'Jun 14, 2026', lastServiceDate: 'May 8, 2026',
+        daysRemaining: 6, riskReason: 'Lost Medicaid May 12 — retro window: 8 days remaining',
+        status: 'not-triggered', alert: 'medicaid-loss', retroWindow: 8,
+      },
+      {
+        id: 'CL-10519', initials: 'AR', medicaidStatus: 'Active',
+        treatmentPlanEnd: 'Jun 3, 2026', lastServiceDate: 'Apr 30, 2026',
+        daysRemaining: 6, riskReason: 'Treatment plan expires in 14 days — no appointment scheduled',
+        status: 'not-triggered',
+      },
+      {
+        id: 'CL-10774', initials: 'MW', medicaidStatus: 'Active',
+        treatmentPlanEnd: 'Aug 20, 2026', lastServiceDate: 'May 8, 2026',
+        daysRemaining: 6, riskReason: 'Wrong payer billed — needs CCBHC triggering service',
+        status: 'not-triggered', alert: 'wrong-payer',
+      },
+      {
+        id: 'CL-11042', initials: 'TC', medicaidStatus: 'At Risk',
+        treatmentPlanEnd: 'Jul 7, 2026', lastServiceDate: 'May 3, 2026',
+        daysRemaining: 6, riskReason: 'Payer change pending — PA not yet approved',
+        status: 'not-triggered',
+      },
+      {
+        id: 'CL-11198', initials: 'LB', medicaidStatus: 'Active',
+        treatmentPlanEnd: 'Sep 12, 2026', lastServiceDate: 'Apr 22, 2026',
+        daysRemaining: 6, riskReason: 'No appointment scheduled — client unreachable',
+        status: 'not-triggered',
+      },
+    ],
+    triggered: [
+      { id: 'CL-10102', initials: 'KP', medicaidStatus: 'Active', treatmentPlanEnd: 'Aug 5, 2026',  lastServiceDate: 'May 22, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 22' },
+      { id: 'CL-10145', initials: 'RM', medicaidStatus: 'Active', treatmentPlanEnd: 'Jul 18, 2026', lastServiceDate: 'May 20, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 20' },
+      { id: 'CL-10203', initials: 'GH', medicaidStatus: 'Active', treatmentPlanEnd: 'Oct 1, 2026',  lastServiceDate: 'May 19, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 19' },
+      { id: 'CL-10311', initials: 'NF', medicaidStatus: 'Active', treatmentPlanEnd: 'Jun 30, 2026', lastServiceDate: 'May 17, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 17' },
+      { id: 'CL-10402', initials: 'DW', medicaidStatus: 'Active', treatmentPlanEnd: 'Aug 14, 2026', lastServiceDate: 'May 15, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 15' },
+    ],
   },
   {
-    id: 'CL-10519', initials: 'AR',
-    medicaidStatus: 'Active',
-    treatmentPlanEnd: 'Jun 3, 2026',
-    lastServiceDate: 'Apr 30, 2026',
-    daysRemaining: 6,
-    riskReason: 'Treatment plan expires in 14 days — no scheduled appointment',
-    status: 'not-triggered',
+    name: 'Avery Patel', credential: 'LPC', team: 'Team 2', county: 'Pawnee County',
+    caseload: 28, triggeredCount: 26, atRiskCount: 1,
+    notTriggered: [
+      {
+        id: 'CL-20441', initials: 'RK', medicaidStatus: 'At Risk',
+        treatmentPlanEnd: 'Jul 2, 2026', lastServiceDate: 'May 6, 2026',
+        daysRemaining: 6, riskReason: 'Payer change pending — PA not yet approved',
+        status: 'not-triggered',
+      },
+      {
+        id: 'CL-20589', initials: 'BT', medicaidStatus: 'Active',
+        treatmentPlanEnd: 'Oct 15, 2026', lastServiceDate: 'Apr 28, 2026',
+        daysRemaining: 6, riskReason: 'No appointment scheduled — 27 days since last service',
+        status: 'not-triggered',
+      },
+    ],
+    triggered: [
+      { id: 'CL-20104', initials: 'LN', medicaidStatus: 'Active', treatmentPlanEnd: 'Sep 3, 2026',  lastServiceDate: 'May 21, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 21' },
+      { id: 'CL-20198', initials: 'SG', medicaidStatus: 'Active', treatmentPlanEnd: 'Aug 11, 2026', lastServiceDate: 'May 20, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 20' },
+      { id: 'CL-20233', initials: 'PO', medicaidStatus: 'Active', treatmentPlanEnd: 'Jul 25, 2026', lastServiceDate: 'May 18, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 18' },
+      { id: 'CL-20317', initials: 'CE', medicaidStatus: 'Active', treatmentPlanEnd: 'Dec 2, 2026',  lastServiceDate: 'May 16, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 16' },
+      { id: 'CL-20405', initials: 'TH', medicaidStatus: 'Active', treatmentPlanEnd: 'Jun 19, 2026', lastServiceDate: 'May 14, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 14' },
+    ],
   },
   {
-    id: 'CL-10774', initials: 'MW',
-    medicaidStatus: 'Active',
-    treatmentPlanEnd: 'Aug 20, 2026',
-    lastServiceDate: 'May 8, 2026',
-    daysRemaining: 6,
-    riskReason: 'Wrong payer billed — needs CCBHC triggering service',
-    status: 'not-triggered',
-    alert: 'wrong-payer',
+    name: 'Sam Whitcomb', credential: 'BHC', team: 'Team 1', county: 'Delaware County',
+    caseload: 35, triggeredCount: 28, atRiskCount: 5,
+    notTriggered: [
+      {
+        id: 'CL-30102', initials: 'MN', medicaidStatus: 'Lost',
+        treatmentPlanEnd: 'Aug 3, 2026', lastServiceDate: 'May 5, 2026',
+        daysRemaining: 6, riskReason: 'Lost Medicaid May 9 — retro window: 4 days remaining',
+        status: 'not-triggered', alert: 'medicaid-loss', retroWindow: 4,
+      },
+      {
+        id: 'CL-30214', initials: 'JR', medicaidStatus: 'At Risk',
+        treatmentPlanEnd: 'May 20, 2026', lastServiceDate: 'Apr 15, 2026',
+        daysRemaining: 6, riskReason: 'Treatment plan expired May 20 — needs immediate renewal',
+        status: 'not-triggered',
+      },
+      {
+        id: 'CL-30318', initials: 'ES', medicaidStatus: 'Active',
+        treatmentPlanEnd: 'Sep 8, 2026', lastServiceDate: 'May 7, 2026',
+        daysRemaining: 6, riskReason: 'Wrong payer billed — needs CCBHC triggering service',
+        status: 'not-triggered', alert: 'wrong-payer',
+      },
+      {
+        id: 'CL-30456', initials: 'CT', medicaidStatus: 'Active',
+        treatmentPlanEnd: 'Jul 30, 2026', lastServiceDate: 'Apr 8, 2026',
+        daysRemaining: 6, riskReason: 'No contact in 47 days — care navigator follow-up needed',
+        status: 'not-triggered',
+      },
+      {
+        id: 'CL-30612', initials: 'WF', medicaidStatus: 'At Risk',
+        treatmentPlanEnd: 'Jun 18, 2026', lastServiceDate: 'Apr 29, 2026',
+        daysRemaining: 6, riskReason: 'Payer change pending — PA under review 18 days',
+        status: 'not-triggered',
+      },
+      {
+        id: 'CL-30788', initials: 'LS', medicaidStatus: 'Active',
+        treatmentPlanEnd: 'Nov 1, 2026', lastServiceDate: 'Apr 18, 2026',
+        daysRemaining: 6, riskReason: 'No upcoming appointment — client unreachable',
+        status: 'not-triggered',
+      },
+      {
+        id: 'CL-30891', initials: 'DH', medicaidStatus: 'Active',
+        treatmentPlanEnd: 'Aug 22, 2026', lastServiceDate: 'Apr 12, 2026',
+        daysRemaining: 6, riskReason: 'Last service Apr 12 — 43 days without CCBHC encounter',
+        status: 'not-triggered',
+      },
+    ],
+    triggered: [
+      { id: 'CL-30011', initials: 'BK', medicaidStatus: 'Active', treatmentPlanEnd: 'Oct 7, 2026',  lastServiceDate: 'May 22, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 22' },
+      { id: 'CL-30044', initials: 'VR', medicaidStatus: 'Active', treatmentPlanEnd: 'Sep 14, 2026', lastServiceDate: 'May 21, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 21' },
+      { id: 'CL-30077', initials: 'FA', medicaidStatus: 'Active', treatmentPlanEnd: 'Jul 3, 2026',  lastServiceDate: 'May 20, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 20' },
+      { id: 'CL-30088', initials: 'QM', medicaidStatus: 'Active', treatmentPlanEnd: 'Dec 9, 2026',  lastServiceDate: 'May 19, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 19' },
+      { id: 'CL-30099', initials: 'HJ', medicaidStatus: 'Active', treatmentPlanEnd: 'Aug 30, 2026', lastServiceDate: 'May 17, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 17' },
+    ],
   },
-  {
-    id: 'CL-11042', initials: 'TC',
-    medicaidStatus: 'At Risk',
-    treatmentPlanEnd: 'Jul 7, 2026',
-    lastServiceDate: 'May 3, 2026',
-    daysRemaining: 6,
-    riskReason: 'Payer change pending — PA not yet approved',
-    status: 'not-triggered',
-  },
-  {
-    id: 'CL-11198', initials: 'LB',
-    medicaidStatus: 'Active',
-    treatmentPlanEnd: 'Sep 12, 2026',
-    lastServiceDate: 'Apr 22, 2026',
-    daysRemaining: 6,
-    riskReason: 'No appointment scheduled — client unreachable',
-    status: 'not-triggered',
-  },
-];
-
-const TRIGGERED: Client[] = [
-  { id: 'CL-10102', initials: 'KP', medicaidStatus: 'Active', treatmentPlanEnd: 'Aug 5, 2026',  lastServiceDate: 'May 22, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 22' },
-  { id: 'CL-10145', initials: 'RM', medicaidStatus: 'Active', treatmentPlanEnd: 'Jul 18, 2026', lastServiceDate: 'May 20, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 20' },
-  { id: 'CL-10203', initials: 'GH', medicaidStatus: 'Active', treatmentPlanEnd: 'Oct 1, 2026',  lastServiceDate: 'May 19, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 19' },
-  { id: 'CL-10311', initials: 'NF', medicaidStatus: 'Active', treatmentPlanEnd: 'Jun 30, 2026', lastServiceDate: 'May 17, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 17' },
-  { id: 'CL-10402', initials: 'DW', medicaidStatus: 'Active', treatmentPlanEnd: 'Aug 14, 2026', lastServiceDate: 'May 15, 2026', daysRemaining: 0, riskReason: '', status: 'triggered', triggeredDate: 'May 15' },
 ];
 
 const TEAM_ROWS: TeamRow[] = [
@@ -122,31 +195,23 @@ const TEAM_ROWS: TeamRow[] = [
 ];
 
 const ORG_AT_RISK: OrgAtRiskClient[] = [
-  { id: 'CL-10238', team: 'Tulsa Team 4',    primaryRisk: 'Medicaid loss — retro window 8 days',       daysRemaining: 6, action: 'Initiate retro-eligibility'     },
-  { id: 'CL-11402', team: 'Delaware Team 1', primaryRisk: 'No service in 22 days — unreachable',        daysRemaining: 6, action: 'Chase via care navigator'        },
-  { id: 'CL-10774', team: 'Tulsa Team 4',    primaryRisk: 'Wrong payer billed — Medicaid not triggered', daysRemaining: 6, action: 'Route to SDP'                   },
-  { id: 'CL-11819', team: 'Delaware Team 1', primaryRisk: 'Treatment plan expired May 1',               daysRemaining: 6, action: 'Urgent plan renewal'             },
-  { id: 'CL-12044', team: 'Pawnee Team 1',   primaryRisk: 'Payer change — PA pending 14 days',          daysRemaining: 6, action: 'Follow up on PA status'         },
-  { id: 'CL-10519', team: 'Tulsa Team 4',    primaryRisk: 'Treatment plan expires in 14 days',          daysRemaining: 6, action: 'Notify clinician to schedule'    },
+  { id: 'CL-10238', team: 'Tulsa Team 4',    primaryRisk: 'Medicaid loss — retro window 8 days',        daysRemaining: 6, action: 'Initiate retro-eligibility'  },
+  { id: 'CL-11402', team: 'Delaware Team 1', primaryRisk: 'No service in 22 days — unreachable',         daysRemaining: 6, action: 'Chase via care navigator'     },
+  { id: 'CL-10774', team: 'Tulsa Team 4',    primaryRisk: 'Wrong payer billed — Medicaid not triggered', daysRemaining: 6, action: 'Route to SDP'                },
+  { id: 'CL-11819', team: 'Delaware Team 1', primaryRisk: 'Treatment plan expired May 1',                daysRemaining: 6, action: 'Urgent plan renewal'          },
+  { id: 'CL-12044', team: 'Pawnee Team 1',   primaryRisk: 'Payer change — PA pending 14 days',           daysRemaining: 6, action: 'Follow up on PA status'      },
+  { id: 'CL-10519', team: 'Tulsa Team 4',    primaryRisk: 'Treatment plan expires in 14 days',           daysRemaining: 6, action: 'Notify clinician to schedule' },
 ];
 
 const ACTIVITY_FEED: ActivityItem[] = [
-  { time: '08:14', text: 'Sent 23 chase emails to clinicians on day-10 triggering reminder',             type: 'email'       },
-  { time: '09:32', text: 'Detected Medicaid loss for CL-11402 — initiated retro-eligibility flow',       type: 'eligibility' },
-  { time: '10:07', text: 'Caseload audit completed for Delaware Team 1 — 4 findings emailed to ITM',     type: 'audit'       },
-  { time: '11:45', text: 'Routed CL-10774 wrong-payer exception to SDP Jamie Lin',                       type: 'routing'     },
-  { time: '13:20', text: 'Treatment plan expiry alert sent for 3 clients across Pawnee Team 1 & 2',      type: 'email'       },
+  { time: '08:14', text: 'Sent 23 chase emails to clinicians on day-10 triggering reminder',         type: 'email'       },
+  { time: '09:32', text: 'Detected Medicaid loss for CL-11402 — initiated retro-eligibility flow',  type: 'eligibility' },
+  { time: '10:07', text: 'Caseload audit completed for Delaware Team 1 — 4 findings emailed to ITM',type: 'audit'       },
+  { time: '11:45', text: 'Routed CL-10774 wrong-payer exception to SDP Jamie Lin',                  type: 'routing'     },
+  { time: '13:20', text: 'Treatment plan expiry alert sent for 3 clients across Pawnee Team 1 & 2', type: 'email'       },
 ];
 
 // ─── Small helpers ────────────────────────────────────────────────────────────
-
-function Avatar({ initials, size = 32, color = '#e8edf8' }: { initials: string; size?: number; color?: string }) {
-  return (
-    <div className="ccbhc-avatar" style={{ width: size, height: size, background: color, fontSize: size * 0.34 }}>
-      {initials}
-    </div>
-  );
-}
 
 function MedicaidPill({ status }: { status: MedicaidStatus }) {
   return (
@@ -168,20 +233,15 @@ function TrafficDot({ pct }: { pct: number }) {
 }
 
 function ActivityIcon({ type }: { type: ActivityItem['type'] }) {
-  const icons: Record<ActivityItem['type'], string> = {
-    email: '✉',
-    eligibility: '⚡',
-    audit: '🔍',
-    routing: '→',
-  };
+  const icons: Record<ActivityItem['type'], string> = { email: '✉', eligibility: '⚡', audit: '🔍', routing: '→' };
   return <span className="ccbhc-feed-icon">{icons[type]}</span>;
 }
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
 
-function KpiCard({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: 'red' | 'green' | 'amber' }) {
+function KpiCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className={`ccbhc-kpi${accent ? ` ccbhc-kpi--${accent}` : ''}`}>
+    <div className="ccbhc-kpi">
       <div className="ccbhc-kpi__label">{label}</div>
       <div className="ccbhc-kpi__value">{value}</div>
       {sub && <div className="ccbhc-kpi__sub">{sub}</div>}
@@ -195,6 +255,8 @@ function CaseloadView({ onClientClick }: { onClientClick: (id: string) => void }
   const [showTriggered, setShowTriggered] = useState(false);
   const [clinicianIdx, setClinicianIdx] = useState(0);
   const clinician = CLINICIANS[clinicianIdx];
+  const triggerPct = Math.round((clinician.triggeredCount / clinician.caseload) * 100);
+  const lastTriggeredDate = clinician.triggered[0]?.triggeredDate ?? '—';
 
   return (
     <div className="ccbhc-layout">
@@ -203,11 +265,10 @@ function CaseloadView({ onClientClick }: { onClientClick: (id: string) => void }
         {/* Sub-header */}
         <div className="ccbhc-subheader">
           <div className="ccbhc-subheader__left">
-            <Avatar initials={clinician.name.split(' ').map(n => n[0]).join('')} size={36} color="#dce6f5" />
             <select
               className="ccbhc-clinician-select"
               value={clinicianIdx}
-              onChange={e => setClinicianIdx(Number(e.target.value))}
+              onChange={e => { setClinicianIdx(Number(e.target.value)); setShowTriggered(false); }}
             >
               {CLINICIANS.map((c, i) => (
                 <option key={i} value={i}>{c.name}, {c.credential} — {c.team}, {c.county}</option>
@@ -225,34 +286,31 @@ function CaseloadView({ onClientClick }: { onClientClick: (id: string) => void }
 
         {/* KPI strip */}
         <div className="ccbhc-kpi-row">
-          <KpiCard label="Caseload size"         value="32 clients"   />
-          <KpiCard label="Triggered this month"  value="27 of 32"     sub="84% — target 98%"  accent="amber" />
-          <KpiCard label="Days remaining"        value="6 days"       sub="Month ends May 31" />
-          <KpiCard label="At-risk clients"       value="3 clients"    sub="Require action"    accent="red"   />
+          <KpiCard label="Caseload size"        value={`${clinician.caseload} clients`} />
+          <KpiCard label="Triggered this month" value={`${clinician.triggeredCount} of ${clinician.caseload}`} sub={`${triggerPct}% — target 98%`} />
+          <KpiCard label="Days remaining"       value="6 days"   sub="Month ends May 31" />
+          <KpiCard label="At-risk clients"      value={`${clinician.atRiskCount} clients`} sub="Require action" />
         </div>
 
         {/* Not yet triggered */}
         <div className="ccbhc-section">
-          <div className="ccbhc-section__header ccbhc-section__header--amber">
+          <div className="ccbhc-section__header ccbhc-section__header--alert">
             <span className="ccbhc-section__title">Not yet triggered</span>
-            <span className="ccbhc-section__count">{NOT_TRIGGERED.length}</span>
+            <span className="ccbhc-section__count">{clinician.notTriggered.length}</span>
           </div>
 
           <div className="ccbhc-client-list">
-            {NOT_TRIGGERED.map(client => (
+            {clinician.notTriggered.map(client => (
               <div
                 key={client.id}
-                className={`ccbhc-client-row${client.alert ? ` ccbhc-client-row--${client.alert}` : ''}`}
+                className={`ccbhc-client-row${client.alert === 'medicaid-loss' ? ' ccbhc-client-row--highlight' : ''}`}
               >
                 <div className="ccbhc-client-row__id">
-                  <Avatar initials={client.initials} size={30}
-                    color={client.alert === 'medicaid-loss' ? '#fde8e8' : client.alert === 'wrong-payer' ? '#fff3e0' : '#f0f4ff'} />
                   <div>
-                    <div className="ccbhc-client-row__name">{client.id} — {client.initials}</div>
+                    <div className="ccbhc-client-row__name">{client.id}</div>
                     {client.alert === 'medicaid-loss' && (
                       <div className="ccbhc-retro-badge">
-                        <span className="ccbhc-retro-badge__icon">⚡</span>
-                        Retro window: <strong>{client.retroWindow} days remaining</strong>
+                        ⚡ Retro window: <strong>{client.retroWindow} days remaining</strong>
                       </div>
                     )}
                   </div>
@@ -269,10 +327,7 @@ function CaseloadView({ onClientClick }: { onClientClick: (id: string) => void }
                   </div>
                 </div>
 
-                <button
-                  className="ccbhc-action-btn"
-                  onClick={() => onClientClick(client.id)}
-                >
+                <button className="ccbhc-action-btn" onClick={() => onClientClick(client.id)}>
                   View details →
                 </button>
               </div>
@@ -283,28 +338,27 @@ function CaseloadView({ onClientClick }: { onClientClick: (id: string) => void }
         {/* Triggered */}
         <div className="ccbhc-section">
           <div
-            className="ccbhc-section__header ccbhc-section__header--green"
+            className="ccbhc-section__header ccbhc-section__header--done"
             onClick={() => setShowTriggered(v => !v)}
             style={{ cursor: 'pointer' }}
           >
             <span className="ccbhc-section__title">
               <span className="ccbhc-section__check">✓</span> Triggered
             </span>
-            <span className="ccbhc-section__count ccbhc-section__count--green">27</span>
+            <span className="ccbhc-section__count ccbhc-section__count--done">{clinician.triggeredCount}</span>
             <button className="ccbhc-toggle-btn">{showTriggered ? 'Hide' : 'Show all'}</button>
           </div>
 
           {!showTriggered ? (
             <div className="ccbhc-triggered-summary">
-              27 clients triggered this month — last on <strong>May 22</strong>
+              {clinician.triggeredCount} clients triggered this month — last on <strong>{lastTriggeredDate}</strong>
             </div>
           ) : (
             <div className="ccbhc-client-list">
-              {TRIGGERED.map(client => (
+              {clinician.triggered.map(client => (
                 <div key={client.id} className="ccbhc-client-row ccbhc-client-row--triggered">
                   <div className="ccbhc-client-row__id">
-                    <Avatar initials={client.initials} size={30} color="#e8f5e9" />
-                    <span className="ccbhc-client-row__name">{client.id} — {client.initials}</span>
+                    <div className="ccbhc-client-row__name">{client.id}</div>
                   </div>
                   <MedicaidPill status={client.medicaidStatus} />
                   <div className="ccbhc-client-row__risk-block">
@@ -360,7 +414,7 @@ function CaseloadView({ onClientClick }: { onClientClick: (id: string) => void }
         <div className="ccbhc-rail__header">Upcoming deadlines</div>
         <div className="ccbhc-deadline-item">
           <div className="ccbhc-deadline-item__date">May 31</div>
-          <div className="ccbhc-deadline-item__label">PPS month close — 5 clients not yet triggered</div>
+          <div className="ccbhc-deadline-item__label">PPS month close — {clinician.notTriggered.length} clients not yet triggered</div>
         </div>
         <div className="ccbhc-deadline-item">
           <div className="ccbhc-deadline-item__date">Jun 3</div>
@@ -383,7 +437,6 @@ function OrgView() {
       <div className="ccbhc-main">
         {/* Metric cards */}
         <div className="ccbhc-org-metrics">
-          {/* Trigger rate */}
           <div className="ccbhc-org-metric-card">
             <div className="ccbhc-org-metric-card__label">Org trigger rate — May 2026</div>
             <div className="ccbhc-org-metric-card__value">94.2%</div>
@@ -398,12 +451,9 @@ function OrgView() {
                 <span>100%</span>
               </div>
             </div>
-            <div className="ccbhc-org-metric-card__trend ccbhc-org-metric-card__trend--up">
-              ↑ +1.8% vs last month
-            </div>
+            <div className="ccbhc-org-metric-card__trend ccbhc-org-metric-card__trend--up">↑ +1.8% vs last month</div>
           </div>
 
-          {/* Revenue at risk */}
           <div className="ccbhc-org-metric-card ccbhc-org-metric-card--amber">
             <div className="ccbhc-org-metric-card__label">Revenue at risk</div>
             <div className="ccbhc-org-metric-card__value">47 clients</div>
@@ -411,13 +461,10 @@ function OrgView() {
             <button className="ccbhc-org-metric-card__link">See breakdown →</button>
           </div>
 
-          {/* Retro recoveries */}
           <div className="ccbhc-org-metric-card ccbhc-org-metric-card--green">
             <div className="ccbhc-org-metric-card__label">Retro-eligibility recoveries</div>
             <div className="ccbhc-org-metric-card__value">12 clients</div>
-            <div className="ccbhc-org-metric-card__desc">
-              <span className="ccbhc-celebration">🎉</span> Recovered this month
-            </div>
+            <div className="ccbhc-org-metric-card__desc"><span className="ccbhc-celebration">🎉</span> Recovered this month</div>
             <div className="ccbhc-org-metric-card__sub">+3 vs April</div>
           </div>
         </div>
@@ -432,13 +479,8 @@ function OrgView() {
             <table className="ccbhc-table">
               <thead>
                 <tr>
-                  <th>Team</th>
-                  <th>County</th>
-                  <th>Caseload</th>
-                  <th>Trigger rate</th>
-                  <th>At-risk</th>
-                  <th>Status</th>
-                  <th>Trend</th>
+                  <th>Team</th><th>County</th><th>Caseload</th><th>Trigger rate</th>
+                  <th>At-risk</th><th>Status</th><th>Trend</th>
                 </tr>
               </thead>
               <tbody>
@@ -449,19 +491,14 @@ function OrgView() {
                     <td>{row.caseload}</td>
                     <td>
                       <div className="ccbhc-inline-bar">
-                        <div className="ccbhc-inline-bar__fill"
-                          style={{ width: `${row.triggeredPct}%`,
-                            background: row.triggeredPct >= 97 ? '#22c55e' : row.triggeredPct >= 92 ? '#f59e0b' : '#ef4444' }}
-                        />
+                        <div className="ccbhc-inline-bar__fill" style={{ width: `${row.triggeredPct}%`, background: row.triggeredPct >= 97 ? '#22c55e' : row.triggeredPct >= 92 ? '#f59e0b' : '#ef4444' }} />
                       </div>
                       <span className={`ccbhc-pct ${row.triggeredPct < 85 ? 'ccbhc-pct--red' : row.triggeredPct < 97 ? 'ccbhc-pct--amber' : 'ccbhc-pct--green'}`}>
                         {row.triggeredPct}%
                       </span>
                     </td>
                     <td>
-                      <span className={`ccbhc-pill ${row.atRisk >= 5 ? 'ccbhc-pill--red' : row.atRisk >= 3 ? 'ccbhc-pill--amber' : 'ccbhc-pill--neutral'}`}>
-                        {row.atRisk}
-                      </span>
+                      <span className={`ccbhc-pill ${row.atRisk >= 5 ? 'ccbhc-pill--red' : row.atRisk >= 3 ? 'ccbhc-pill--amber' : 'ccbhc-pill--neutral'}`}>{row.atRisk}</span>
                     </td>
                     <td><TrafficDot pct={row.triggeredPct} /></td>
                     <td><TrendIcon trend={row.trend} /></td>
@@ -481,13 +518,7 @@ function OrgView() {
           <div className="ccbhc-table-wrap">
             <table className="ccbhc-table">
               <thead>
-                <tr>
-                  <th>Client ID</th>
-                  <th>Team</th>
-                  <th>Primary risk</th>
-                  <th>Days left</th>
-                  <th>Recommended action</th>
-                </tr>
+                <tr><th>Client ID</th><th>Team</th><th>Primary risk</th><th>Days left</th><th>Recommended action</th></tr>
               </thead>
               <tbody>
                 {ORG_AT_RISK.map(c => (
@@ -495,9 +526,7 @@ function OrgView() {
                     <td className="ccbhc-table__id">{c.id}</td>
                     <td>{c.team}</td>
                     <td className="ccbhc-table__risk">{c.primaryRisk}</td>
-                    <td>
-                      <span className="ccbhc-pill ccbhc-pill--amber">{c.daysRemaining}d</span>
-                    </td>
+                    <td><span className="ccbhc-pill ccbhc-pill--amber">{c.daysRemaining}d</span></td>
                     <td className="ccbhc-table__action">{c.action}</td>
                   </tr>
                 ))}
@@ -507,14 +536,13 @@ function OrgView() {
         </div>
       </div>
 
-      {/* Right rail — activity feed */}
+      {/* Right rail */}
       <aside className="ccbhc-rail">
         <div className="ccbhc-rail__header">Eleos activity today</div>
         <div className="ccbhc-feed">
           {ACTIVITY_FEED.map((item, i) => (
             <div key={i} className="ccbhc-feed-item">
               <div className="ccbhc-feed-item__time">{item.time}</div>
-              <div className="ccbhc-feed-item__line" />
               <div className="ccbhc-feed-item__body">
                 <ActivityIcon type={item.type} />
                 <span>{item.text}</span>
@@ -525,22 +553,10 @@ function OrgView() {
 
         <div className="ccbhc-rail__divider" />
         <div className="ccbhc-rail__header">Monthly summary</div>
-        <div className="ccbhc-summary-stat">
-          <span className="ccbhc-summary-stat__label">Chase emails sent</span>
-          <span className="ccbhc-summary-stat__value">187</span>
-        </div>
-        <div className="ccbhc-summary-stat">
-          <span className="ccbhc-summary-stat__label">Eligibility checks run</span>
-          <span className="ccbhc-summary-stat__value">362</span>
-        </div>
-        <div className="ccbhc-summary-stat">
-          <span className="ccbhc-summary-stat__label">Exceptions auto-triaged</span>
-          <span className="ccbhc-summary-stat__value">24</span>
-        </div>
-        <div className="ccbhc-summary-stat">
-          <span className="ccbhc-summary-stat__label">TSS hours saved (est.)</span>
-          <span className="ccbhc-summary-stat__value">41h</span>
-        </div>
+        <div className="ccbhc-summary-stat"><span className="ccbhc-summary-stat__label">Chase emails sent</span><span className="ccbhc-summary-stat__value">187</span></div>
+        <div className="ccbhc-summary-stat"><span className="ccbhc-summary-stat__label">Eligibility checks run</span><span className="ccbhc-summary-stat__value">362</span></div>
+        <div className="ccbhc-summary-stat"><span className="ccbhc-summary-stat__label">Exceptions auto-triaged</span><span className="ccbhc-summary-stat__value">24</span></div>
+        <div className="ccbhc-summary-stat"><span className="ccbhc-summary-stat__label">TSS hours saved (est.)</span><span className="ccbhc-summary-stat__value">41h</span></div>
       </aside>
     </div>
   );
@@ -548,9 +564,11 @@ function OrgView() {
 
 // ─── Screen 3 — Client Triage Detail ─────────────────────────────────────────
 
-function TriageDetail({ clientId, onBack }: { clientId: string; onBack: () => void }) {
+function TriageDetail({ clientId, clinicianName, onBack }: { clientId: string; clinicianName: string; onBack: () => void }) {
   const [approved, setApproved] = useState(false);
-  const client = NOT_TRIGGERED.find(c => c.id === clientId) ?? NOT_TRIGGERED[0];
+
+  // Find client across all clinicians
+  const client = CLINICIANS.flatMap(c => c.notTriggered).find(c => c.id === clientId) ?? CLINICIANS[0].notTriggered[0];
   const isWrongPayer = client.alert === 'wrong-payer';
   const isMedicaidLoss = client.alert === 'medicaid-loss';
 
@@ -560,17 +578,18 @@ function TriageDetail({ clientId, onBack }: { clientId: string; onBack: () => vo
       <div className="ccbhc-breadcrumb">
         <button className="ccbhc-breadcrumb__link" onClick={onBack}>CCBHC Tracking</button>
         <span className="ccbhc-breadcrumb__sep">›</span>
-        <button className="ccbhc-breadcrumb__link" onClick={onBack}>Morgan Reyes</button>
+        <button className="ccbhc-breadcrumb__link" onClick={onBack}>{clinicianName}</button>
         <span className="ccbhc-breadcrumb__sep">›</span>
         <span className="ccbhc-breadcrumb__current">{clientId}</span>
       </div>
 
       {/* Client header card */}
       <div className="ccbhc-client-header">
-        <Avatar initials={client.initials} size={44} color={isMedicaidLoss ? '#fde8e8' : '#f0f4ff'} />
         <div className="ccbhc-client-header__info">
-          <div className="ccbhc-client-header__id">{clientId} — {client.initials}</div>
-          <div className="ccbhc-client-header__meta">Age 34 · Tulsa County · {isMedicaidLoss ? 'Medicaid Lost May 12' : 'Active Medicaid'}</div>
+          <div className="ccbhc-client-header__id">{clientId}</div>
+          <div className="ccbhc-client-header__meta">
+            Age 34 · Tulsa County · {isMedicaidLoss ? 'Medicaid Lost May 12' : 'Active Medicaid'}
+          </div>
         </div>
         <MedicaidPill status={client.medicaidStatus} />
         {isMedicaidLoss && (
@@ -615,7 +634,6 @@ function TriageDetail({ clientId, onBack }: { clientId: string; onBack: () => vo
                 { role: 'Care Navigator', name: 'Riley Okafor', cred: 'CN'   },
               ].map(m => (
                 <div key={m.role} className="ccbhc-team-member">
-                  <Avatar initials={m.name.split(' ').map(n => n[0]).join('')} size={24} color="#e8edf8" />
                   <div>
                     <div className="ccbhc-team-member__name">{m.name}</div>
                     <div className="ccbhc-team-member__role">{m.role} · {m.cred}</div>
@@ -672,10 +690,8 @@ function TriageDetail({ clientId, onBack }: { clientId: string; onBack: () => vo
                 <div className="ccbhc-diagnosis-card__header">
                   <div className="ccbhc-diagnosis-card__title">
                     Likely cause:{' '}
-                    {isWrongPayer
-                      ? 'Wrong payer billed for triggering service'
-                      : isMedicaidLoss
-                      ? 'Medicaid coverage lapsed — retro window open'
+                    {isWrongPayer ? 'Wrong payer billed for triggering service'
+                      : isMedicaidLoss ? 'Medicaid coverage lapsed — retro window open'
                       : 'No triggering service scheduled before month-end'}
                   </div>
                   <span className="ccbhc-confidence-pill">High confidence</span>
@@ -684,28 +700,22 @@ function TriageDetail({ clientId, onBack }: { clientId: string; onBack: () => vo
                 <div className="ccbhc-diagnosis-card__reasoning">
                   <div className="ccbhc-reasoning-title">Reasoning</div>
                   <ul className="ccbhc-reasoning-list">
-                    {isWrongPayer ? (
-                      <>
-                        <li>Client had one service on May 8 (individual therapy)</li>
-                        <li>Service was billed to <strong>private insurance</strong></li>
-                        <li>CCBHC PPS triggers only on Medicaid-billed services</li>
-                        <li>Client has active Medicaid coverage through Nov 2026</li>
-                      </>
-                    ) : isMedicaidLoss ? (
-                      <>
-                        <li>Medicaid coverage lapsed May 12, 2026</li>
-                        <li>No CCBHC-triggering service recorded after lapse</li>
-                        <li>Retro-eligibility recovery window is still open (8 days)</li>
-                        <li>Client had consistent coverage for prior 14 months</li>
-                      </>
-                    ) : (
-                      <>
-                        <li>No service billed to Medicaid in May 2026</li>
-                        <li>Last service was April 30 — predates May billing period</li>
-                        <li>6 days remain in the month to schedule a triggering service</li>
-                        <li>Client is reachable — last contact May 3</li>
-                      </>
-                    )}
+                    {isWrongPayer ? (<>
+                      <li>Client had one service on May 8 (individual therapy)</li>
+                      <li>Service was billed to <strong>private insurance</strong></li>
+                      <li>CCBHC PPS triggers only on Medicaid-billed services</li>
+                      <li>Client has active Medicaid coverage through Nov 2026</li>
+                    </>) : isMedicaidLoss ? (<>
+                      <li>Medicaid coverage lapsed May 12, 2026</li>
+                      <li>No CCBHC-triggering service recorded after lapse</li>
+                      <li>Retro-eligibility recovery window is still open (8 days)</li>
+                      <li>Client had consistent coverage for prior 14 months</li>
+                    </>) : (<>
+                      <li>No service billed to Medicaid in May 2026</li>
+                      <li>Last service was April 30 — predates May billing period</li>
+                      <li>6 days remain in the month to schedule a triggering service</li>
+                      <li>Client is reachable — last contact May 3</li>
+                    </>)}
                   </ul>
                 </div>
               </div>
@@ -713,16 +723,12 @@ function TriageDetail({ clientId, onBack }: { clientId: string; onBack: () => vo
               <div className="ccbhc-recommendation-card">
                 <div className="ccbhc-recommendation-card__label">Recommended action</div>
                 <div className="ccbhc-recommendation-card__action">
-                  {isWrongPayer
-                    ? 'Route to SDP (Jamie Lin) to schedule a CCBHC-triggering service this week'
-                    : isMedicaidLoss
-                    ? 'Initiate retro-eligibility recovery via Care Navigator (Riley Okafor)'
+                  {isWrongPayer ? 'Route to SDP (Jamie Lin) to schedule a CCBHC-triggering service this week'
+                    : isMedicaidLoss ? 'Initiate retro-eligibility recovery via Care Navigator (Riley Okafor)'
                     : 'Notify Morgan Reyes to schedule a Medicaid-billed service before May 31'}
                 </div>
                 <div className="ccbhc-recommendation-card__actions">
-                  <button className="ccbhc-primary-btn" onClick={() => setApproved(true)}>
-                    Approve and route
-                  </button>
+                  <button className="ccbhc-primary-btn" onClick={() => setApproved(true)}>Approve and route</button>
                   <button className="ccbhc-secondary-btn">Modify recommendation</button>
                 </div>
               </div>
@@ -749,7 +755,9 @@ function TriageDetail({ clientId, onBack }: { clientId: string; onBack: () => vo
             <div className="ccbhc-alt-card__title">
               {isWrongPayer ? 'Notify Morgan Reyes to re-bill under Medicaid' : 'Schedule emergency visit this week'}
             </div>
-            <div className="ccbhc-alt-card__reason">Not preferred — {isWrongPayer ? 're-billing requires authorization from billing team; higher friction' : 'client has shown scheduling difficulty; low probability of success'}</div>
+            <div className="ccbhc-alt-card__reason">
+              Not preferred — {isWrongPayer ? 're-billing requires authorization from billing team; higher friction' : 'client has shown scheduling difficulty; low probability of success'}
+            </div>
           </div>
 
           <div className="ccbhc-alt-card">
@@ -783,13 +791,16 @@ type MainView = 'caseload' | 'org';
 export default function CCBHCTracker() {
   const [view, setView] = useState<MainView>('caseload');
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
+  const [selectedClinicianName, setSelectedClinicianName] = useState(CLINICIANS[0].name);
 
-  const handleClientClick = (id: string) => setSelectedClient(id);
+  const handleClientClick = (id: string, clinicianName: string) => {
+    setSelectedClient(id);
+    setSelectedClinicianName(clinicianName);
+  };
   const handleBack = () => setSelectedClient(null);
 
   return (
     <div className="ccbhc-root">
-      {/* Page header */}
       <div className="ccbhc-page-header">
         <div className="ccbhc-page-header__left">
           <h1 className="ccbhc-page-title">CCBHC Tracking</h1>
@@ -797,35 +808,22 @@ export default function CCBHCTracker() {
         </div>
         <div className="ccbhc-page-header__right">
           <div className="ccbhc-notif-bell">
-            🔔
-            <span className="ccbhc-notif-badge">3</span>
+            🔔<span className="ccbhc-notif-badge">3</span>
           </div>
         </div>
       </div>
 
-      {/* View tabs — only when not in triage detail */}
       {!selectedClient && (
         <div className="ccbhc-tabs">
-          <button
-            className={`ccbhc-tab${view === 'caseload' ? ' ccbhc-tab--active' : ''}`}
-            onClick={() => setView('caseload')}
-          >
-            Caseload view
-          </button>
-          <button
-            className={`ccbhc-tab${view === 'org' ? ' ccbhc-tab--active' : ''}`}
-            onClick={() => setView('org')}
-          >
-            Organization view
-          </button>
+          <button className={`ccbhc-tab${view === 'caseload' ? ' ccbhc-tab--active' : ''}`} onClick={() => setView('caseload')}>Caseload view</button>
+          <button className={`ccbhc-tab${view === 'org' ? ' ccbhc-tab--active' : ''}`} onClick={() => setView('org')}>Organization view</button>
         </div>
       )}
 
-      {/* Content */}
       {selectedClient ? (
-        <TriageDetail clientId={selectedClient} onBack={handleBack} />
+        <TriageDetail clientId={selectedClient} clinicianName={selectedClinicianName} onBack={handleBack} />
       ) : view === 'caseload' ? (
-        <CaseloadView onClientClick={handleClientClick} />
+        <CaseloadView onClientClick={(id) => handleClientClick(id, CLINICIANS.find(c => c.notTriggered.some(cl => cl.id === id))?.name ?? CLINICIANS[0].name)} />
       ) : (
         <OrgView />
       )}
