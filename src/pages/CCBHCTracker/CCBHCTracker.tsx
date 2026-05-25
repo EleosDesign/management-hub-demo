@@ -260,16 +260,14 @@ function CaseloadView({ onClientClick }: { onClientClick: (id: string) => void }
 
                 <MedicaidPill status={client.medicaidStatus} />
 
-                <div className="ccbhc-client-row__meta">
-                  <span className="ccbhc-meta-label">Plan ends</span>
-                  <span>{client.treatmentPlanEnd}</span>
+                <div className="ccbhc-client-row__risk-block">
+                  <div className="ccbhc-client-row__risk">{client.riskReason}</div>
+                  <div className="ccbhc-client-row__dates">
+                    <span>Plan ends {client.treatmentPlanEnd}</span>
+                    <span>·</span>
+                    <span>Last service {client.lastServiceDate}</span>
+                  </div>
                 </div>
-                <div className="ccbhc-client-row__meta">
-                  <span className="ccbhc-meta-label">Last service</span>
-                  <span>{client.lastServiceDate}</span>
-                </div>
-
-                <div className="ccbhc-client-row__risk">{client.riskReason}</div>
 
                 <button
                   className="ccbhc-action-btn"
@@ -309,15 +307,15 @@ function CaseloadView({ onClientClick }: { onClientClick: (id: string) => void }
                     <span className="ccbhc-client-row__name">{client.id} — {client.initials}</span>
                   </div>
                   <MedicaidPill status={client.medicaidStatus} />
-                  <div className="ccbhc-client-row__meta">
-                    <span className="ccbhc-meta-label">Plan ends</span>
-                    <span>{client.treatmentPlanEnd}</span>
+                  <div className="ccbhc-client-row__risk-block">
+                    <div className="ccbhc-client-row__risk">
+                      Triggered <span className="ccbhc-triggered-date">{client.triggeredDate}</span>
+                    </div>
+                    <div className="ccbhc-client-row__dates">
+                      <span>Plan ends {client.treatmentPlanEnd}</span>
+                    </div>
                   </div>
-                  <div className="ccbhc-client-row__meta">
-                    <span className="ccbhc-meta-label">Triggered</span>
-                    <span className="ccbhc-triggered-date">May {client.triggeredDate?.split(' ')[1]}</span>
-                  </div>
-                  <span className="ccbhc-pill ccbhc-pill--triggered">Triggered</span>
+                  <span className="ccbhc-pill ccbhc-pill--triggered">✓ Triggered</span>
                 </div>
               ))}
             </div>

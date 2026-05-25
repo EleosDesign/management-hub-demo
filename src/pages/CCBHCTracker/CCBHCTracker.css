@@ -306,7 +306,7 @@
 
 .ccbhc-client-row {
   display: grid;
-  grid-template-columns: 220px 90px 130px 130px 1fr auto;
+  grid-template-columns: 200px 90px 1fr auto;
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
@@ -369,10 +369,28 @@
   color: #374151;
 }
 
+.ccbhc-client-row__risk-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
 .ccbhc-client-row__risk {
   font-size: 12px;
   color: #374151;
   line-height: 1.4;
+}
+
+.ccbhc-client-row__dates {
+  font-size: 11px;
+  color: #9ca3af;
+  display: flex;
+  gap: 8px;
+}
+
+.ccbhc-client-row__dates span {
+  white-space: nowrap;
 }
 
 .ccbhc-triggered-date {
