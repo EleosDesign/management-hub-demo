@@ -778,6 +778,31 @@
   color: #64748b;
 }
 
+.ccbhc-rate-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.ccbhc-table-action-btn {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: #1e40af;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.ccbhc-table-action-btn:hover {
+  background: #dbeafe;
+}
+
 /* ── Inline bar in table ── */
 
 .ccbhc-inline-bar {

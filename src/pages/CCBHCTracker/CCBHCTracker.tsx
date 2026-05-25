@@ -195,12 +195,12 @@ const TEAM_ROWS: TeamRow[] = [
 ];
 
 const ORG_AT_RISK: OrgAtRiskClient[] = [
-  { id: 'CL-10238', team: 'Tulsa Team 4',    primaryRisk: 'Medicaid loss — retro window 8 days',        daysRemaining: 6, action: 'Initiate retro-eligibility'  },
-  { id: 'CL-11402', team: 'Delaware Team 1', primaryRisk: 'No service in 22 days — unreachable',         daysRemaining: 6, action: 'Chase via care navigator'     },
-  { id: 'CL-10774', team: 'Tulsa Team 4',    primaryRisk: 'Wrong payer billed — Medicaid not triggered', daysRemaining: 6, action: 'Route to SDP'                },
-  { id: 'CL-11819', team: 'Delaware Team 1', primaryRisk: 'Treatment plan expired May 1',                daysRemaining: 6, action: 'Urgent plan renewal'          },
-  { id: 'CL-12044', team: 'Pawnee Team 1',   primaryRisk: 'Payer change — PA pending 14 days',           daysRemaining: 6, action: 'Follow up on PA status'      },
-  { id: 'CL-10519', team: 'Tulsa Team 4',    primaryRisk: 'Treatment plan expires in 14 days',           daysRemaining: 6, action: 'Notify clinician to schedule' },
+  { id: 'CL-10238', team: 'Tulsa Team 4',    primaryRisk: 'Medicaid loss — retro window 8 days',        daysRemaining: 6, action: 'View retro workflow'       },
+  { id: 'CL-11402', team: 'Delaware Team 1', primaryRisk: 'No service in 22 days — unreachable',         daysRemaining: 6, action: 'Assign care navigator'      },
+  { id: 'CL-10774', team: 'Tulsa Team 4',    primaryRisk: 'Wrong payer billed — Medicaid not triggered', daysRemaining: 6, action: 'Review SDP routing'         },
+  { id: 'CL-11819', team: 'Delaware Team 1', primaryRisk: 'Treatment plan expired May 1',                daysRemaining: 6, action: 'Open renewal request'       },
+  { id: 'CL-12044', team: 'Pawnee Team 1',   primaryRisk: 'Payer change — PA pending 14 days',           daysRemaining: 6, action: 'Check PA status'            },
+  { id: 'CL-10519', team: 'Tulsa Team 4',    primaryRisk: 'Treatment plan expires in 14 days',           daysRemaining: 6, action: 'Schedule triggering service' },
 ];
 
 const ACTIVITY_FEED: ActivityItem[] = [
@@ -465,7 +465,7 @@ function OrgView() {
               <thead>
                 <tr>
                   <th>Team</th><th>County</th><th>Caseload</th><th>Trigger rate</th>
-                  <th>At-risk</th><th>Status</th><th>Trend</th>
+                  <th>At-risk</th>
                 </tr>
               </thead>
               <tbody>
@@ -478,15 +478,16 @@ function OrgView() {
                       <div className="ccbhc-inline-bar">
                         <div className="ccbhc-inline-bar__fill" style={{ width: `${row.triggeredPct}%`, background: row.triggeredPct >= 97 ? '#22c55e' : row.triggeredPct >= 92 ? '#f59e0b' : '#ef4444' }} />
                       </div>
-                      <span className={`ccbhc-pct ${row.triggeredPct < 85 ? 'ccbhc-pct--red' : row.triggeredPct < 97 ? 'ccbhc-pct--amber' : 'ccbhc-pct--green'}`}>
-                        {row.triggeredPct}%
-                      </span>
+                      <div className="ccbhc-rate-row">
+                        <span className={`ccbhc-pct ${row.triggeredPct < 85 ? 'ccbhc-pct--red' : row.triggeredPct < 97 ? 'ccbhc-pct--amber' : 'ccbhc-pct--green'}`}>
+                          {row.triggeredPct}%
+                        </span>
+                        <TrendIcon trend={row.trend} />
+                      </div>
                     </td>
                     <td>
                       <span className={`ccbhc-pill ${row.atRisk >= 5 ? 'ccbhc-pill--red' : row.atRisk >= 3 ? 'ccbhc-pill--amber' : 'ccbhc-pill--neutral'}`}>{row.atRisk}</span>
                     </td>
-                    <td><TrafficDot pct={row.triggeredPct} /></td>
-                    <td><TrendIcon trend={row.trend} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -503,7 +504,7 @@ function OrgView() {
           <div className="ccbhc-table-wrap">
             <table className="ccbhc-table">
               <thead>
-                <tr><th>Client ID</th><th>Team</th><th>Primary risk</th><th>Days left</th><th>Recommended action</th></tr>
+                <tr><th>Client ID</th><th>Team</th><th>Primary risk</th><th>Days left</th><th>Action</th></tr>
               </thead>
               <tbody>
                 {ORG_AT_RISK.map(c => (
@@ -512,7 +513,7 @@ function OrgView() {
                     <td>{c.team}</td>
                     <td className="ccbhc-table__risk">{c.primaryRisk}</td>
                     <td><span className="ccbhc-pill ccbhc-pill--amber">{c.daysRemaining}d</span></td>
-                    <td className="ccbhc-table__action">{c.action}</td>
+                    <td><button className="ccbhc-table-action-btn">{c.action} →</button></td>
                   </tr>
                 ))}
               </tbody>
