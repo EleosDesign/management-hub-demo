@@ -5,6 +5,7 @@ import {
   FileCheckIcon,
   ShieldCheckIcon,
   ClipboardListIcon,
+  TargetIcon,
   BuildingIcon,
   UsersGroupIcon,
   ChevronDownIcon,
@@ -66,7 +67,7 @@ const navItems: NavItem[] = [
   {
     id: 'ccbhc',
     label: 'CCBHC Tracker',
-    icon: <ShieldCheckIcon color="white" />,
+    icon: <TargetIcon color="white" />,
     path: '/ccbhc-tracker',
   },
 ];
