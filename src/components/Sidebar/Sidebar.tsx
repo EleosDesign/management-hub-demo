@@ -5,6 +5,7 @@ import {
   FileCheckIcon,
   ShieldCheckIcon,
   ClipboardListIcon,
+  TargetIcon,
   BuildingIcon,
   UsersGroupIcon,
   ChevronDownIcon,
@@ -63,6 +64,12 @@ const navItems: NavItem[] = [
     icon: <ClipboardListIcon size={20} color="white" />,
     path: '/eligibility-report',
   },
+  {
+    id: 'ccbhc',
+    label: 'CCBHC Tracker',
+    icon: <TargetIcon color="white" />,
+    path: '/ccbhc-tracker',
+  },
 ];
 
 export function Sidebar() {
@@ -71,7 +78,7 @@ export function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const COLLAPSED_PREFIXES = ['/leadership-report', '/compliance-report', '/eligibility-report', '/workflows'];
+  const COLLAPSED_PREFIXES = ['/leadership-report', '/compliance-report', '/eligibility-report', '/ccbhc-tracker', '/workflows'];
 
   useEffect(() => {
     if (COLLAPSED_PREFIXES.some(prefix => location.pathname.startsWith(prefix))) {
