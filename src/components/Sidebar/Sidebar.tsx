@@ -6,6 +6,7 @@ import {
   ShieldCheckIcon,
   ClipboardListIcon,
   TargetIcon,
+  NoteIcon,
   BuildingIcon,
   UsersGroupIcon,
   ChevronDownIcon,
@@ -38,6 +39,7 @@ const navItems: NavItem[] = [
     children: [
       { id: 'users', label: 'Users', path: '/users', icon: <UsersGroupIcon color="white" /> },
       { id: 'sites', label: 'Sites', path: '/sites', icon: <BuildingIcon color="white" /> },
+      { id: 'note-types', label: 'Note Types', path: '/note-types', icon: <NoteIcon size={18} color="white" /> },
     ],
   },
   {

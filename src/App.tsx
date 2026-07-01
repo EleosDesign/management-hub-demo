@@ -7,6 +7,7 @@ import { LeadershipReport } from './pages/Reports/LeadershipReport';
 import { ComplianceReport } from './pages/Reports/ComplianceReport';
 import { EligibilityReport } from './pages/Reports/EligibilityReport';
 import CCBHCTracker from './pages/CCBHCTracker/CCBHCTracker';
+import { NoteTypesPage } from './pages/NoteTypes/NoteTypesPage';
 import './styles/globals.css';
 import './styles/workflow-utils.css';
 import './App.css';
@@ -31,6 +32,7 @@ function AppContent() {
           <Route path="/compliance-report" element={<ComplianceReport />} />
           <Route path="/eligibility-report" element={<EligibilityReport />} />
           <Route path="/ccbhc-tracker" element={<CCBHCTracker />} />
+          <Route path="/note-types" element={<NoteTypesPage />} />
           <Route path="/workflows" element={<WorkflowsLanding />} />
           <Route path="/workflows/new" element={<WorkflowComposer />} />
           <Route path="/workflows/:id" element={<WorkflowDetail />} />
@@ -47,7 +49,6 @@ export default function App() {
       <div className="app-layout">
         <Sidebar />
         <div className="app-main">
-          <header className="app-header" />
           <AppContent />
         </div>
       </div>
