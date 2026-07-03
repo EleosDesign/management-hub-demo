@@ -15,12 +15,16 @@ interface EditNoteTypePanelProps {
   onClose: () => void;
   onSave: (updated: NoteType) => void;
   onDelete: (id: string) => void;
+  onDuplicate: (note: NoteType) => void;
+  existingNames: string[];
+  focusName?: boolean;
 }
 
 interface FormState {
   name: string;
   format: NoteFormat;
-  profession: string;
+  profession: string[];
+  otherProfession: string;
   description: string;
   active: boolean;
   fields: NoteType['fields'];
@@ -28,10 +32,13 @@ interface FormState {
 }
 
 function formFromNote(n: NoteType): FormState {
+  const knownProfessions = n.profession.filter(p => PROFESSION_OPTIONS.includes(p as typeof PROFESSION_OPTIONS[number]));
+  const otherVal = n.profession.find(p => !PROFESSION_OPTIONS.includes(p as typeof PROFESSION_OPTIONS[number]));
   return {
     name: n.name,
     format: n.format,
-    profession: '',
+    profession: otherVal ? [...knownProfessions, 'Other'] : n.profession,
+    otherProfession: otherVal ?? '',
     description: n.description,
     active: n.active,
     fields: JSON.parse(JSON.stringify(n.fields)),
@@ -45,21 +52,26 @@ function isDirty(original: NoteType, form: FormState): boolean {
     form.format !== original.format ||
     form.description !== original.description ||
     form.active !== original.active ||
+    JSON.stringify([...form.profession].sort()) !== JSON.stringify([...original.profession].sort()) ||
     JSON.stringify(form.fields) !== JSON.stringify(original.fields) ||
     JSON.stringify(form.pages) !== JSON.stringify(original.pages)
   );
 }
 
-export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete }: EditNoteTypePanelProps) {
+export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDuplicate, existingNames, focusName }: EditNoteTypePanelProps) {
   const [form, setForm] = useState<FormState>(() =>
-    noteType ? formFromNote(noteType) : { name: '', format: 'Individual', profession: '', description: '', active: true, fields: [], pages: [] }
+    noteType ? formFromNote(noteType) : { name: '', format: 'Individual', profession: [], otherProfession: '', description: '', active: true, fields: [], pages: [] }
   );
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (noteType) setForm(formFromNote(noteType));
+    if (noteType) {
+      setForm(formFromNote(noteType));
+      if (focusName) setTimeout(() => nameInputRef.current?.select(), 0);
+    }
   }, [noteType]);
 
   useEffect(() => {
@@ -76,17 +88,33 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete }: EditN
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        if (menuOpen) setMenuOpen(false);
+        else onClose();
+      }
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [menuOpen, onClose]);
+
   if (!noteType) return null;
 
   const totalFields = countFields(form.pages, form.fields);
-  const canSave = form.name.trim() !== '' && form.profession !== '' && totalFields > 0 && isDirty(noteType, form);
+  const nameTaken = existingNames.some(n => n.toLowerCase() === form.name.trim().toLowerCase());
+  const canSave = form.name.trim() !== '' && !nameTaken && form.profession.length > 0 && totalFields > 0 && isDirty(noteType, form);
 
   function handleSave() {
     if (!canSave) return;
+    const savedProfession = form.profession.map(p =>
+      p === 'Other' && form.otherProfession.trim() ? form.otherProfession.trim() : p
+    );
     onSave({
       ...noteType!,
       name: form.name.trim(),
       format: form.format,
+      profession: savedProfession,
       description: form.description,
       active: form.active,
       fields: form.pages.length > 0 ? [] : form.fields,
@@ -100,6 +128,11 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete }: EditN
     onDelete(noteType!.id);
     setConfirmDeleteOpen(false);
     onClose();
+  }
+
+  function handleDuplicate() {
+    setMenuOpen(false);
+    onDuplicate(noteType!);
   }
 
   function toggleActive() {
@@ -131,28 +164,43 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete }: EditN
 
           <div className="edit-panel__identity">
             <div className="edit-panel__name-row">
-              <span id="enp-name" className="edit-panel__name">{noteType.name}</span>
-              <span className="edit-panel__badge"><span className="edit-panel__badge-text">{noteType.format}</span></span>
-            </div>
-            <div className="edit-panel__menu-wrapper" ref={menuRef}>
-              <button className="edit-panel__more-btn" onClick={() => setMenuOpen(o => !o)} aria-label="More options">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <input
+                ref={nameInputRef}
+                id="enp-name"
+                className="edit-panel__name edit-panel__name--input"
+                value={form.name}
+                onChange={e => patch({ name: e.target.value })}
+                aria-label="Note type name"
+                aria-describedby={nameTaken ? 'enp-name-error' : undefined}
+              />
+              <div className="edit-panel__menu-wrapper" ref={menuRef}>
+              <button
+                className="edit-panel__more-btn"
+                onClick={() => setMenuOpen(o => !o)}
+                aria-label="More options"
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                   <circle cx="10" cy="4" r="1.5" fill="currentColor" />
                   <circle cx="10" cy="10" r="1.5" fill="currentColor" />
                   <circle cx="10" cy="16" r="1.5" fill="currentColor" />
                 </svg>
               </button>
               {menuOpen && (
-                <div className="edit-panel__menu">
-                  <button className="edit-panel__menu-item" onClick={toggleActive}>
-                    {noteType.active ? 'Deactivate note type' : 'Activate note type'}
+                <div className="edit-panel__menu" role="menu">
+                  <button className="edit-panel__menu-item" role="menuitem" onClick={handleDuplicate}>
+                    Duplicate note type
                   </button>
-                  <button className="edit-panel__menu-item edit-panel__menu-item--danger" onClick={() => { setMenuOpen(false); setConfirmDeleteOpen(true); }}>
+                  <button className="edit-panel__menu-item edit-panel__menu-item--danger" role="menuitem" onClick={() => { setMenuOpen(false); setConfirmDeleteOpen(true); }}>
                     Delete note type
                   </button>
                 </div>
               )}
+              </div>
             </div>
+            <span className="edit-panel__badge"><span className="edit-panel__badge-text">{noteType.format}</span></span>
+            {nameTaken && <p id="enp-name-error" className="nt-field-error" role="alert">A note type with this name already exists</p>}
           </div>
 
           <p className="edit-panel__email enp-format-hint">{noteType.active ? 'Active' : 'Inactive'} · Last modified {noteType.lastModified}</p>
@@ -162,12 +210,7 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete }: EditN
         {/* Scrollable body */}
         <div className="edit-panel__body">
           <div className="enp-field">
-            <label className="enp-label">Note Type Name <span className="enp-required">*</span></label>
-            <input className="enp-input" value={form.name} onChange={e => patch({ name: e.target.value })} placeholder="e.g., Psychiatry, Case Management" />
-          </div>
-
-          <div className="enp-field">
-            <label className="enp-label">Note Format <span className="enp-required">*</span></label>
+            <label className="enp-label">Note Format <span className="enp-required" aria-hidden="true">*</span></label>
             <div className="enp-select-wrap">
               <select className="enp-select" value={form.format} onChange={e => patch({ format: e.target.value as NoteFormat })}>
                 {FORMAT_OPTIONS.map(opt => <option key={opt}>{opt}</option>)}
@@ -177,14 +220,29 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete }: EditN
           </div>
 
           <div className="enp-field">
-            <label className="enp-label">Profession <span className="enp-required">*</span></label>
-            <div className="enp-select-wrap">
-              <select className="enp-select" value={form.profession} onChange={e => patch({ profession: e.target.value })}>
-                <option value="">Select profession...</option>
-                {PROFESSION_OPTIONS.map(opt => <option key={opt}>{opt}</option>)}
-              </select>
-              <ChevronDownIcon size={16} color="var(--color-text-secondary)" />
+            <label className="enp-label">Profession <span className="enp-required" aria-hidden="true">*</span></label>
+            <div className="enp-profession-checkboxes">
+              {PROFESSION_OPTIONS.map(opt => (
+                <label key={opt} className="enp-profession-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={form.profession.includes(opt)}
+                    onChange={() => patch({ profession: form.profession.includes(opt) ? form.profession.filter(p => p !== opt) : [...form.profession, opt] })}
+                  />
+                  <span>{opt}</span>
+                </label>
+              ))}
             </div>
+            {form.profession.includes('Other') && (
+              <input
+                className="enp-input"
+                placeholder="Please specify…"
+                aria-label="Other profession — please specify"
+                value={form.otherProfession}
+                onChange={e => patch({ otherProfession: e.target.value })}
+                autoFocus
+              />
+            )}
           </div>
 
           <div className="enp-field">

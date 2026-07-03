@@ -7,9 +7,9 @@ import { SearchIcon, PlusIcon, ChevronDownIcon } from '../../components/icons';
 import { EditNoteTypePanel } from '../../components/EditNoteTypePanel/EditNoteTypePanel';
 import { NoteStructureSection } from './NoteStructureEditor';
 import {
-  NoteType, NoteFormat,
+  NoteType, NoteFormat, NoteField, NotePage,
   FORMAT_OPTIONS, FORMAT_DESCRIPTIONS, PROFESSION_OPTIONS,
-  countFields, newField,
+  HAS_OPTIONS, countFields, newField,
 } from './noteTypeTypes';
 import './NoteTypesPage.css';
 
@@ -17,7 +17,7 @@ import './NoteTypesPage.css';
 
 const MOCK_NOTES: NoteType[] = [
   {
-    id: '1', name: 'Psychiatry', format: 'Individual',
+    id: '1', name: 'Psychiatry', format: 'Individual', profession: ['Psychiatrist'],
     description: 'Psychiatric evaluation and medication management sessions',
     active: true, lastModified: '1/15/2024', pages: [],
     fields: [
@@ -29,7 +29,7 @@ const MOCK_NOTES: NoteType[] = [
     ],
   },
   {
-    id: '2', name: 'Case Management', format: 'Individual',
+    id: '2', name: 'Case Management', format: 'Individual', profession: ['Case Manager'],
     description: 'Case management and care coordination notes',
     active: true, lastModified: '2/10/2024', pages: [],
     fields: [
@@ -40,7 +40,7 @@ const MOCK_NOTES: NoteType[] = [
     ],
   },
   {
-    id: '3', name: 'Peer Support', format: 'Individual',
+    id: '3', name: 'Peer Support', format: 'Individual', profession: ['Peer Support Specialist'],
     description: 'Peer support specialist sessions',
     active: true, lastModified: '2/1/2024', pages: [],
     fields: [
@@ -51,7 +51,7 @@ const MOCK_NOTES: NoteType[] = [
     ],
   },
   {
-    id: '4', name: 'Family Therapy', format: 'Group',
+    id: '4', name: 'Family Therapy', format: 'Group', profession: ['Therapist'],
     description: 'Family therapy sessions with multiple participants',
     active: true, lastModified: '3/12/2024', pages: [],
     fields: [
@@ -63,7 +63,7 @@ const MOCK_NOTES: NoteType[] = [
     ],
   },
   {
-    id: '5', name: 'Play Therapy', format: 'Individual',
+    id: '5', name: 'Play Therapy', format: 'Individual', profession: ['Counselor'],
     description: 'Play therapy for children and adolescents',
     active: true, lastModified: '2/10/2024', pages: [],
     fields: [
@@ -74,7 +74,7 @@ const MOCK_NOTES: NoteType[] = [
     ],
   },
   {
-    id: '6', name: 'Group Therapy', format: 'Group',
+    id: '6', name: 'Group Therapy', format: 'Group', profession: ['Therapist'],
     description: 'Group therapy sessions for multiple clients',
     active: true, lastModified: '3/20/2024', pages: [],
     fields: [
@@ -86,7 +86,7 @@ const MOCK_NOTES: NoteType[] = [
     ],
   },
   {
-    id: '7', name: 'Psychotherapy', format: 'Individual',
+    id: '7', name: 'Psychotherapy', format: 'Individual', profession: ['Therapist'],
     description: 'Individual psychotherapy sessions',
     active: true, lastModified: '3/1/2024',
     fields: [],
@@ -124,7 +124,7 @@ const MOCK_NOTES: NoteType[] = [
     ],
   },
   {
-    id: '8', name: 'Crisis Intervention', format: 'Individual',
+    id: '8', name: 'Crisis Intervention', format: 'Individual', profession: ['Counselor'],
     description: 'Emergency crisis intervention services',
     active: false, lastModified: '10/15/2024', pages: [],
     fields: [
@@ -143,27 +143,143 @@ const DEFAULT_FIELDS = [
   { id: 'f3', title: 'Plan', type: 'Text' as const, options: [] },
 ];
 
+// ─── Note Preview ─────────────────────────────────────────────────────────────
+
+function FieldPreviewCard({ field }: { field: NoteField }) {
+  const hasOpts = HAS_OPTIONS.includes(field.type) && field.options.length > 0;
+  return (
+    <div className="nt-preview__field-card nt-preview__field-card--options">
+      <div className="nt-preview__field-name">{field.title || <em>Untitled field</em>}</div>
+      {field.type === 'Text' && (
+        <div className="nt-preview__field-input">Text field</div>
+      )}
+      {field.type === 'Dropdown' && (
+        <select className="nt-preview__field-select" defaultValue="">
+          <option value="" disabled>Select…</option>
+          {(hasOpts ? field.options : []).map((opt, i) => (
+            <option key={i} value={opt}>{opt}</option>
+          ))}
+        </select>
+      )}
+      {field.type === 'Radio' && (
+        <div className="nt-preview__field-options">
+          {(hasOpts ? field.options : ['Option']).map((opt, i) => (
+            <label key={i} className="nt-preview__field-option">
+              <input type="radio" name={field.id} disabled readOnly />
+              <span>{opt}</span>
+            </label>
+          ))}
+        </div>
+      )}
+      {field.type === 'Checkbox' && (
+        <div className="nt-preview__field-options">
+          {(hasOpts ? field.options : ['Option']).map((opt, i) => (
+            <label key={i} className="nt-preview__field-option">
+              <input type="checkbox" disabled readOnly />
+              <span>{opt}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NotePreviewPanel({ pages, fields }: { pages: NotePage[]; fields: NoteField[] }) {
+  const [previewIdx, setPreviewIdx] = useState(0);
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+
+  const clampedIdx = Math.min(previewIdx, Math.max(0, pages.length - 1));
+  const activePage = pages[clampedIdx];
+  const flatFields = pages.length === 0 ? fields : (activePage?.fields ?? []);
+  const sections = activePage?.sections ?? [];
+  const isEmpty = pages.length === 0 && fields.length === 0;
+
+  function toggleSection(id: string) {
+    setCollapsed(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  return (
+    <div className="nt-preview">
+      <div className="nt-preview__header-label">Preview</div>
+
+      {pages.length > 0 && (
+        <div className="nt-preview__nav">
+          <span className="nt-preview__nav-info">
+            <span className="nt-preview__nav-num">{clampedIdx + 1} of {pages.length}:</span>
+            {' '}<strong>{activePage?.title || `Page ${clampedIdx + 1}`}</strong>
+          </span>
+          <div className="nt-preview__nav-btns">
+            <button className="nt-preview__nav-btn" onClick={() => setPreviewIdx(p => Math.max(0, p - 1))} disabled={clampedIdx === 0}>
+              ‹ Prev
+            </button>
+            <button className="nt-preview__nav-btn" onClick={() => setPreviewIdx(p => Math.min(pages.length - 1, p + 1))} disabled={clampedIdx === pages.length - 1}>
+              Next ›
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="nt-preview__body">
+        {isEmpty && (
+          <div className="nt-preview__empty">Add fields to see a preview</div>
+        )}
+        {sections.map(section => (
+          <div key={section.id} className="nt-preview__section">
+            <button className="nt-preview__section-header" onClick={() => toggleSection(section.id)}>
+              <span>{section.title || 'Untitled section'}</span>
+              <svg
+                className={`nt-preview__section-chevron${collapsed.has(section.id) ? ' nt-preview__section-chevron--collapsed' : ''}`}
+                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+              >
+                <polyline points="18 15 12 9 6 15" />
+              </svg>
+            </button>
+            {!collapsed.has(section.id) && (
+              <div className="nt-preview__section-fields">
+                {section.fields.map(f => <FieldPreviewCard key={f.id} field={f} />)}
+                {section.fields.length === 0 && <div className="nt-preview__section-empty">No fields yet</div>}
+              </div>
+            )}
+          </div>
+        ))}
+        {flatFields.map(f => <FieldPreviewCard key={f.id} field={f} />)}
+      </div>
+    </div>
+  );
+}
+
 // ─── Add Note Type Modal ──────────────────────────────────────────────────────
 
 type ImportStatus = 'idle' | 'loading' | 'done' | 'error';
 
+const DEMO_IMPORT_NAME = 'Outpatient Progress Note';
 const DEMO_IMPORT_FIELDS = [
-  { id: '', title: 'Presenting Problem', type: 'Text' as const, options: [] },
-  { id: '', title: 'Session Focus', type: 'Radio' as const, options: ['Individual goals', 'Crisis support', 'Skill building', 'Psychoeducation'] },
-  { id: '', title: 'Interventions Used', type: 'Text' as const, options: [] },
-  { id: '', title: 'Client Response', type: 'Radio' as const, options: ['Engaged', 'Resistant', 'Neutral', 'Distressed'] },
-  { id: '', title: 'Progress Toward Goals', type: 'Radio' as const, options: ['Improving', 'Stable', 'Declining'] },
+  { id: '', title: 'Delivery of Service', type: 'Checkbox' as const, options: ['Face-to-Face', 'Phone', 'Telehealth/Video'] },
+  { id: '', title: 'Location of Provider', type: 'Dropdown' as const, options: [] },
+  { id: '', title: 'Location of Client', type: 'Dropdown' as const, options: [] },
+  { id: '', title: 'Mode of Transmission of Telehealth Service', type: 'Dropdown' as const, options: ['ITV'] },
+  { id: '', title: 'Basis for determining telehealth is an appropriate and effective means of delivering services', type: 'Checkbox' as const, options: ['Best option available for service delivery', 'Other (comment below)'] },
+  { id: '', title: 'Update/Assessment', type: 'Text' as const, options: [] },
+  { id: '', title: 'Type of Focused Intervention (If Applicable)', type: 'Checkbox' as const, options: ['AAT', 'ABC', 'ART', 'Bounce Back', 'CBITS', 'CBT', 'CPP', 'DBT', 'EFT', 'EMDR', 'IFS', 'MAI', 'MI', 'Narrative Therapy', 'PCIT', 'Solution Focused', 'TFCBT'] },
+  { id: '', title: 'Intervention', type: 'Text' as const, options: [] },
   { id: '', title: 'Plan', type: 'Text' as const, options: [] },
 ].map(f => ({ ...f, id: crypto.randomUUID() }));
 
-function AddNoteTypeModal({ open, onClose, onSave }: {
+function AddNoteTypeModal({ open, onClose, onSave, existingNames }: {
   open: boolean;
   onClose: () => void;
   onSave: (note: NoteType) => void;
+  existingNames: string[];
 }) {
   const [name, setName] = useState('');
   const [format, setFormat] = useState<NoteFormat>('Individual');
-  const [profession, setProfession] = useState('');
+  const [profession, setProfession] = useState<string[]>([]);
+  const [otherProfession, setOtherProfession] = useState('');
   const [description, setDescription] = useState('');
   const [active, setActive] = useState(true);
   const [fields, setFields] = useState(DEFAULT_FIELDS.map(f => ({ ...f, id: crypto.randomUUID() })));
@@ -172,27 +288,38 @@ function AddNoteTypeModal({ open, onClose, onSave }: {
   const [importFileName, setImportFileName] = useState('');
   const [importError, setImportError] = useState('');
   const [dropOver, setDropOver] = useState(false);
+  const [importMode, setImportMode] = useState<'file' | 'paste'>('file');
+  const [pasteJson, setPasteJson] = useState('');
+  const [pasteError, setPasteError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function resetForm() {
-    setName(''); setFormat('Individual'); setProfession(''); setDescription(''); setActive(true);
+    setName(''); setFormat('Individual'); setProfession([]); setOtherProfession(''); setDescription(''); setActive(true);
     setFields(DEFAULT_FIELDS.map(f => ({ ...f, id: crypto.randomUUID() })));
     setPages([]);
     setImportStatus('idle'); setImportFileName(''); setImportError('');
+    setImportMode('file'); setPasteJson(''); setPasteError('');
   }
 
   function handleClose() { resetForm(); onClose(); }
 
   function handleSave() {
     if (!isValid) return;
+    const savedProfession = profession.map(p =>
+      p === 'Other' && otherProfession.trim() ? otherProfession.trim() : p
+    );
     onSave({
       id: crypto.randomUUID(),
-      name: name.trim(), format, description, active,
+      name: name.trim(), format, profession: savedProfession, description, active,
       fields: pages.length > 0 ? [] : fields,
       pages,
       lastModified: new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
     });
     resetForm(); onClose();
+  }
+
+  function toggleProfession(opt: string) {
+    setProfession(prev => prev.includes(opt) ? prev.filter(p => p !== opt) : [...prev, opt]);
   }
 
   function applyImport(data: Partial<{ name: string; format: NoteFormat; description: string; fields: NoteType['fields']; pages: NoteType['pages'] }>) {
@@ -203,56 +330,83 @@ function AddNoteTypeModal({ open, onClose, onSave }: {
     else if (data.fields && data.fields.length > 0) setFields(data.fields);
   }
 
-  function handleFile(file: File) {
-    setImportFileName(file.name);
+  function handleFiles(files: File[]) {
+    if (files.length === 0) return;
     setImportError('');
     setImportStatus('loading');
+    const label = files.length === 1 ? files[0].name : `${files[0].name} +${files.length - 1} more`;
+    setImportFileName(label);
 
-    const ext = file.name.split('.').pop()?.toLowerCase();
+    const promises = files.map(file => new Promise<NoteType['fields']>(resolve => {
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      if (ext === 'json' || file.type === 'application/json') {
+        const reader = new FileReader();
+        reader.onload = e => {
+          try {
+            const parsed = JSON.parse(e.target?.result as string);
+            resolve((parsed.fields ?? []).map((f: NoteType['fields'][number]) => ({ ...f, id: crypto.randomUUID() })));
+          } catch {
+            resolve([]);
+          }
+        };
+        reader.readAsText(file);
+      } else {
+        setTimeout(() => {
+          setName(DEMO_IMPORT_NAME);
+          resolve(DEMO_IMPORT_FIELDS.map(f => ({ ...f, id: crypto.randomUUID() })));
+        }, 1200);
+      }
+    }));
 
-    if (ext === 'json' || file.type === 'application/json') {
-      const reader = new FileReader();
-      reader.onload = e => {
-        try {
-          const parsed = JSON.parse(e.target?.result as string);
-          applyImport(parsed);
-          setImportStatus('done');
-        } catch {
-          setImportError('Invalid JSON — could not parse the file.');
-          setImportStatus('error');
-        }
-      };
-      reader.readAsText(file);
-    } else {
-      // PDF or image: simulate extraction (demo)
-      setTimeout(() => {
-        applyImport({ fields: DEMO_IMPORT_FIELDS.map(f => ({ ...f, id: crypto.randomUUID() })) });
-        setImportStatus('done');
-      }, 1800);
-    }
+    Promise.all(promises).then(allFields => {
+      const seen = new Set<string>();
+      const merged = allFields.flat().filter(f => {
+        if (seen.has(f.title)) return false;
+        seen.add(f.title);
+        return true;
+      });
+      if (merged.length > 0) {
+        setFields(merged);
+        setPages([]);
+      }
+      setImportStatus('done');
+    });
   }
 
   function onFileInput(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) handleFile(file);
+    const files = Array.from(e.target.files ?? []);
+    if (files.length) handleFiles(files);
     e.target.value = '';
   }
 
   function onDrop(e: React.DragEvent) {
     e.preventDefault();
     setDropOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) handleFile(file);
+    const files = Array.from(e.dataTransfer.files ?? []);
+    if (files.length) handleFiles(files);
   }
 
-  const isValid = name.trim().length > 0 && profession.length > 0 && countFields(pages, fields) > 0;
+  function handlePasteApply() {
+    setPasteError('');
+    try {
+      const parsed = JSON.parse(pasteJson);
+      applyImport(parsed);
+      setImportStatus('done');
+      setImportFileName('pasted JSON');
+    } catch {
+      setPasteError('Invalid JSON — check your syntax and try again.');
+    }
+  }
+
+  const nameTaken = existingNames.some(n => n.toLowerCase() === name.trim().toLowerCase());
+  const isValid = name.trim().length > 0 && !nameTaken && profession.length > 0 && countFields(pages, fields) > 0;
 
   return (
     <Modal
       open={open}
       onClose={handleClose}
       title="Add Note Type"
-      width={720}
+      width={1040}
       footer={
         <>
           <Button variant="outlined" onClick={handleClose}>Cancel</Button>
@@ -260,66 +414,12 @@ function AddNoteTypeModal({ open, onClose, onSave }: {
         </>
       }
     >
-      {/* Import zone */}
-      <div
-        className={`nt-import-zone${dropOver ? ' nt-import-zone--over' : ''}${importStatus === 'done' ? ' nt-import-zone--done' : ''}${importStatus === 'error' ? ' nt-import-zone--error' : ''}`}
-        onDragOver={e => { e.preventDefault(); setDropOver(true); }}
-        onDragLeave={() => setDropOver(false)}
-        onDrop={onDrop}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json,application/json,.pdf,application/pdf,image/*"
-          style={{ display: 'none' }}
-          onChange={onFileInput}
-        />
-        {importStatus === 'idle' && (
-          <>
-            <div className="nt-import-zone__icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-            </div>
-            <div className="nt-import-zone__text">
-              <span>Drop a file to import </span>
-              <button className="nt-import-zone__browse" onClick={() => fileInputRef.current?.click()}>or browse</button>
-            </div>
-            <div className="nt-import-zone__hint">Supports JSON, PDF, or screenshots</div>
-          </>
-        )}
-        {importStatus === 'loading' && (
-          <>
-            <div className="nt-import-zone__spinner" />
-            <div className="nt-import-zone__text">Analyzing <strong>{importFileName}</strong>…</div>
-          </>
-        )}
-        {importStatus === 'done' && (
-          <>
-            <div className="nt-import-zone__check">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-            </div>
-            <div className="nt-import-zone__text"><strong>{importFileName}</strong> imported — review and adjust below</div>
-            <button className="nt-import-zone__clear" onClick={() => { setImportStatus('idle'); setImportFileName(''); }}>Clear</button>
-          </>
-        )}
-        {importStatus === 'error' && (
-          <>
-            <div className="nt-import-zone__text nt-import-zone__text--error">{importError}</div>
-            <button className="nt-import-zone__clear" onClick={() => { setImportStatus('idle'); setImportFileName(''); setImportError(''); }}>Try again</button>
-          </>
-        )}
-      </div>
-
-      <div className="nt-import-divider"><span>or fill in manually</span></div>
-
+      <div className="nt-modal__split">
+      <div className="nt-modal__split-left">
       <div className="nt-modal__field">
         <label className="nt-modal__label">Note Type Name <span className="nt-modal__required">*</span></label>
         <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g., Psychiatry, Case Management" />
+        {nameTaken && <p className="nt-field-error" role="alert">A note type with this name already exists</p>}
       </div>
 
       <div className="nt-modal__field">
@@ -335,13 +435,28 @@ function AddNoteTypeModal({ open, onClose, onSave }: {
 
       <div className="nt-modal__field">
         <label className="nt-modal__label">Profession <span className="nt-modal__required">*</span></label>
-        <div className="nt-modal__select-wrap">
-          <select className="nt-modal__select" value={profession} onChange={e => setProfession(e.target.value)}>
-            <option value="">Select profession...</option>
-            {PROFESSION_OPTIONS.map(opt => <option key={opt}>{opt}</option>)}
-          </select>
-          <ChevronDownIcon size={16} color="var(--color-text-secondary)" />
+        <div className="nt-profession-checkboxes">
+          {PROFESSION_OPTIONS.map(opt => (
+            <label key={opt} className="nt-profession-checkbox">
+              <input
+                type="checkbox"
+                checked={profession.includes(opt)}
+                onChange={() => toggleProfession(opt)}
+              />
+              <span>{opt}</span>
+            </label>
+          ))}
         </div>
+        {profession.includes('Other') && (
+          <div className="nt-profession-other-input">
+            <Input
+              placeholder="Please specify…"
+              value={otherProfession}
+              onChange={e => setOtherProfession(e.target.value)}
+              autoFocus
+            />
+          </div>
+        )}
       </div>
 
       <div className="nt-modal__field">
@@ -367,39 +482,190 @@ function AddNoteTypeModal({ open, onClose, onSave }: {
 
       <div className="nt-modal__divider" />
 
+      {/* Import zone — above Note Structure */}
+      <div className="nt-import-wrap">
+        <div className="nt-import-tabs">
+          <button
+            className={`nt-import-tab${importMode === 'file' ? ' nt-import-tab--active' : ''}`}
+            onClick={() => setImportMode('file')}
+          >
+            Upload file
+          </button>
+          <button
+            className={`nt-import-tab${importMode === 'paste' ? ' nt-import-tab--active' : ''}`}
+            onClick={() => setImportMode('paste')}
+          >
+            Paste JSON
+          </button>
+        </div>
+
+        {importMode === 'file' ? (
+          <div
+            className={`nt-import-zone${dropOver ? ' nt-import-zone--over' : ''}${importStatus === 'done' ? ' nt-import-zone--done' : ''}${importStatus === 'error' ? ' nt-import-zone--error' : ''}`}
+            onDragOver={e => { e.preventDefault(); setDropOver(true); }}
+            onDragLeave={() => setDropOver(false)}
+            onDrop={onDrop}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json,application/json,.pdf,application/pdf,image/*"
+              multiple
+              style={{ display: 'none' }}
+              onChange={onFileInput}
+            />
+            {importStatus === 'idle' && (
+              <>
+                <div className="nt-import-zone__icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                </div>
+                <div className="nt-import-zone__text">
+                  <span>Drop files to import </span>
+                  <button className="nt-import-zone__browse" onClick={() => fileInputRef.current?.click()}>or browse</button>
+                </div>
+                <div className="nt-import-zone__hint">JSON, PDF, or screenshot — select multiple</div>
+              </>
+            )}
+            {importStatus === 'loading' && (
+              <>
+                <div className="nt-import-zone__spinner" />
+                <div className="nt-import-zone__text">Analyzing <strong>{importFileName}</strong>…</div>
+              </>
+            )}
+            {importStatus === 'done' && (
+              <>
+                <div className="nt-import-zone__check">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </div>
+                <div className="nt-import-zone__text"><strong>{importFileName}</strong> imported — review and adjust below</div>
+                <button className="nt-import-zone__clear" onClick={() => { setImportStatus('idle'); setImportFileName(''); }}>Clear</button>
+              </>
+            )}
+            {importStatus === 'error' && (
+              <>
+                <div className="nt-import-zone__text nt-import-zone__text--error">{importError}</div>
+                <button className="nt-import-zone__clear" onClick={() => { setImportStatus('idle'); setImportFileName(''); setImportError(''); }}>Try again</button>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="nt-import-paste">
+            <textarea
+              className="nt-import-paste__textarea"
+              value={pasteJson}
+              onChange={e => { setPasteJson(e.target.value); setPasteError(''); }}
+              placeholder={'{\n  "name": "...",\n  "fields": [\n    { "title": "...", "type": "Text", "options": [] }\n  ]\n}'}
+              rows={6}
+              spellCheck={false}
+            />
+            {pasteError && <div className="nt-import-paste__error">{pasteError}</div>}
+            {importStatus === 'done' && importMode === 'paste' && (
+              <div className="nt-import-paste__success">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Applied — review and adjust the structure below
+              </div>
+            )}
+            <button
+              className="nt-import-paste__apply"
+              onClick={handlePasteApply}
+              disabled={!pasteJson.trim()}
+            >
+              Apply
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="nt-import-divider"><span>or build manually</span></div>
+
       <NoteStructureSection
         fields={fields}
         pages={pages}
         onFieldsChange={setFields}
         onPagesChange={setPages}
       />
+      </div>{/* split-left */}
+      <div className="nt-modal__split-right">
+        <NotePreviewPanel pages={pages} fields={fields} />
+      </div>
+      </div>{/* split */}
     </Modal>
   );
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 export function NoteTypesPage() {
   const [notes, setNotes] = useState<NoteType[]>(MOCK_NOTES);
   const [search, setSearch] = useState('');
   const [addOpen, setAddOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<NoteType | null>(null);
+  const [editingIsDuplicate, setEditingIsDuplicate] = useState(false);
   const [page, setPage] = useState(1);
+  const [sortCol, setSortCol] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  function toggleSort(col: string) {
+    if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortCol(col); setSortDir('asc'); }
+    setPage(1);
+  }
 
   const filtered = notes.filter(n =>
     n.name.toLowerCase().includes(search.toLowerCase()) ||
     n.description.toLowerCase().includes(search.toLowerCase())
   );
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  const sorted = sortCol ? [...filtered].sort((a, b) => {
+    let av = '', bv = '';
+    if (sortCol === 'name') { av = a.name; bv = b.name; }
+    else if (sortCol === 'format') { av = a.format; bv = b.format; }
+    else if (sortCol === 'profession') { av = a.profession.join(', '); bv = b.profession.join(', '); }
+    else if (sortCol === 'description') { av = a.description; bv = b.description; }
+    else if (sortCol === 'status') { av = a.active ? 'Active' : 'Inactive'; bv = b.active ? 'Active' : 'Inactive'; }
+    else if (sortCol === 'lastModified') { av = a.lastModified; bv = b.lastModified; }
+    return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+  }) : filtered;
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
-  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const paginated = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   function handleSearch(val: string) { setSearch(val); setPage(1); }
   function handleSave(note: NoteType) { setNotes(prev => [note, ...prev]); setPage(1); }
-  function handleEdit(updated: NoteType) { setNotes(prev => prev.map(n => n.id === updated.id ? updated : n)); }
+  function handleEdit(updated: NoteType) {
+    setNotes(prev =>
+      prev.some(n => n.id === updated.id)
+        ? prev.map(n => n.id === updated.id ? updated : n)
+        : [updated, ...prev]
+    );
+  }
   function handleDelete(id: string) { setNotes(prev => prev.filter(n => n.id !== id)); }
+  function handleDuplicate(note: NoteType) {
+    const existingNames = notes.map(n => n.name.toLowerCase());
+    let candidateName = `${note.name} (copy)`;
+    let counter = 2;
+    while (existingNames.includes(candidateName.toLowerCase())) {
+      candidateName = `${note.name} (copy ${counter++})`;
+    }
+    const duplicate: NoteType = {
+      ...JSON.parse(JSON.stringify(note)),
+      id: crypto.randomUUID(),
+      name: candidateName,
+      active: false,
+      lastModified: new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
+    };
+    setEditingNote(duplicate);
+    setEditingIsDuplicate(true);
+  }
 
   return (
     <div className="nt-page">
@@ -415,6 +681,7 @@ export function NoteTypesPage() {
               value={search}
               onChange={e => handleSearch(e.target.value)}
               placeholder="Search note types..."
+              aria-label="Search note types"
               startIcon={<SearchIcon size={18} color="var(--color-text-secondary)" />}
             />
           </div>
@@ -427,18 +694,53 @@ export function NoteTypesPage() {
           <table className="data-table nt-table">
             <thead>
               <tr>
-                <th className="nt-table__th nt-table__th--name">Name</th>
-                <th className="nt-table__th">Format</th>
-                <th className="nt-table__th nt-table__th--desc">Description</th>
-                <th className="nt-table__th">Status</th>
-                <th className="nt-table__th nt-table__th--date">Last Modified</th>
+                {([
+                  ['name', 'Name', 'nt-table__th--name'],
+                  ['format', 'Format', ''],
+                  ['profession', 'Profession', ''],
+                  ['description', 'Description', 'nt-table__th--desc'],
+                  ['status', 'Status', ''],
+                  ['lastModified', 'Last Modified', 'nt-table__th--date'],
+                ] as [string, string, string][]).map(([col, label, extra]) => (
+                  <th
+                    key={col}
+                    className={`nt-table__th ${extra}`.trim()}
+                    aria-sort={sortCol === col ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+                  >
+                    <button
+                      className={`nt-table__sort-btn${sortCol === col ? ' nt-table__sort-btn--active' : ''}`}
+                      onClick={() => toggleSort(col)}
+                      aria-label={`Sort by ${label}${sortCol === col ? `, ${sortDir === 'asc' ? 'ascending' : 'descending'}` : ''}`}
+                    >
+                      {label}
+                      <span className="nt-table__sort-icon" aria-hidden="true">
+                        <svg width="8" height="5" viewBox="0 0 8 5" fill="none">
+                          <path d="M4 0L8 5H0L4 0Z" fill={sortCol === col && sortDir === 'asc' ? 'var(--color-primary-main)' : 'currentColor'} />
+                        </svg>
+                        <svg width="8" height="5" viewBox="0 0 8 5" fill="none">
+                          <path d="M4 5L0 0H8L4 5Z" fill={sortCol === col && sortDir === 'desc' ? 'var(--color-primary-main)' : 'currentColor'} />
+                        </svg>
+                      </span>
+                    </button>
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {paginated.map(note => (
-                <tr key={note.id} className="nt-table__row" onClick={() => setEditingNote(note)} style={{ cursor: 'pointer' }}>
+                <tr
+                  key={note.id}
+                  className="nt-table__row"
+                  onClick={() => { setEditingNote(note); setEditingIsDuplicate(false); }}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditingNote(note); setEditingIsDuplicate(false); } }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Edit ${note.name}`}
+                  style={{ cursor: 'pointer' }}
+                >
                   <td className="nt-table__name">{note.name}</td>
                   <td><span className="nt-format-badge">{note.format}</span></td>
+                  <td>{note.profession.join(', ')}</td>
                   <td className="nt-table__desc">{note.description}</td>
                   <td>
                     <span className={`nt-status-badge nt-status-badge--${note.active ? 'active' : 'inactive'}`}>
@@ -449,7 +751,7 @@ export function NoteTypesPage() {
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={5} className="nt-table__empty">No note types found</td></tr>
+                <tr><td colSpan={6} className="nt-table__empty">No note types found</td></tr>
               )}
             </tbody>
           </table>
@@ -491,12 +793,15 @@ export function NoteTypesPage() {
         )}
       </div>
 
-      <AddNoteTypeModal open={addOpen} onClose={() => setAddOpen(false)} onSave={handleSave} />
+      <AddNoteTypeModal open={addOpen} onClose={() => setAddOpen(false)} onSave={handleSave} existingNames={notes.map(n => n.name)} />
       <EditNoteTypePanel
         noteType={editingNote}
-        onClose={() => setEditingNote(null)}
+        onClose={() => { setEditingNote(null); setEditingIsDuplicate(false); }}
         onSave={handleEdit}
         onDelete={handleDelete}
+        onDuplicate={handleDuplicate}
+        focusName={editingIsDuplicate}
+        existingNames={notes.filter(n => n.id !== editingNote?.id).map(n => n.name)}
       />
     </div>
   );

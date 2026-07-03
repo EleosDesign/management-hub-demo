@@ -25,6 +25,7 @@ export interface NoteType {
   id: string;
   name: string;
   format: NoteFormat;
+  profession: string[];
   description: string;
   active: boolean;
   pages: NotePage[];

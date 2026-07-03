@@ -11,6 +11,16 @@ import {
 export function FieldList({ fields, onChange }: { fields: NoteField[]; onChange: (f: NoteField[]) => void }) {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
+  const focusOptRef = useRef<{ fid: string; oi: number } | null>(null);
+  const optInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+  React.useEffect(() => {
+    if (!focusOptRef.current) return;
+    const { fid, oi } = focusOptRef.current;
+    const key = `${fid}-${oi}`;
+    optInputRefs.current[key]?.focus();
+    focusOptRef.current = null;
+  });
 
   if (fields.length === 0) return null;
 
@@ -34,8 +44,17 @@ export function FieldList({ fields, onChange }: { fields: NoteField[]; onChange:
   const removeOpt = (fid: string, oi: number) =>
     onChange(fields.map(f => f.id !== fid ? f : { ...f, options: f.options.filter((_, i) => i !== oi) }));
 
-  const addOpt = (fid: string) =>
-    onChange(fields.map(f => f.id === fid ? { ...f, options: [...f.options, ''] } : f));
+  const addOpt = (fid: string, afterIdx?: number) => {
+    const insertAt = afterIdx !== undefined ? afterIdx + 1 : undefined;
+    onChange(fields.map(f => {
+      if (f.id !== fid) return f;
+      const opts = [...f.options];
+      if (insertAt !== undefined) opts.splice(insertAt, 0, '');
+      else opts.push('');
+      return { ...f, options: opts };
+    }));
+    focusOptRef.current = { fid, oi: insertAt ?? (fields.find(f => f.id === fid)?.options.length ?? 0) };
+  };
 
   const drop = (toIdx: number) => {
     if (dragIdx === null || dragIdx === toIdx) { setDragIdx(null); setOverIdx(null); return; }
@@ -80,17 +99,34 @@ export function FieldList({ fields, onChange }: { fields: NoteField[]; onChange:
             <div className="nt-field-options">
               <div className="nt-field-options__label">Options</div>
               {f.options.map((opt, oi) => (
-                <div key={oi} className="nt-field-option-row">
-                  <input
-                    className="nt-field-option-row__input"
-                    value={opt}
-                    onChange={e => updateOpt(f.id, oi, e.target.value)}
-                    placeholder={`Option ${oi + 1}`}
-                  />
-                  <button className="nt-field-row__delete" onClick={() => removeOpt(f.id, oi)} aria-label="Remove option">
-                    <TrashIcon size={14} color="var(--color-text-secondary)" />
-                  </button>
-                </div>
+                <React.Fragment key={oi}>
+                  <div className="nt-field-option-row">
+                    <span className="nt-field-option-row__num">{oi + 1}.</span>
+                    <input
+                      ref={el => { optInputRefs.current[`${f.id}-${oi}`] = el; }}
+                      className="nt-field-option-row__input"
+                      value={opt}
+                      onChange={e => updateOpt(f.id, oi, e.target.value)}
+                      placeholder={`Option ${oi + 1}`}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') { e.preventDefault(); addOpt(f.id, oi); }
+                      }}
+                    />
+                    <button className="nt-field-row__delete" onClick={() => removeOpt(f.id, oi)} aria-label="Remove option">
+                      <TrashIcon size={14} color="var(--color-text-secondary)" />
+                    </button>
+                  </div>
+                  {/other/i.test(opt) && (
+                    <div className="nt-field-option-other">
+                      <input
+                        className="nt-field-option-row__input nt-field-option-other__input"
+                        placeholder="Please specify…"
+                        disabled
+                        aria-label="Other — free text input (shown when 'Other' is selected)"
+                      />
+                    </div>
+                  )}
+                </React.Fragment>
               ))}
               <button className="nt-field-options__add" onClick={() => addOpt(f.id)}>+ Add option</button>
             </div>
@@ -139,12 +175,11 @@ export function SectionEditor({ section, onUpdate, onDelete, dragHandleProps }: 
   );
 }
 
-// ─── PageEditor ───────────────────────────────────────────────────────────────
+// ─── PageBody ─────────────────────────────────────────────────────────────────
 
-export function PageEditor({ page, onUpdate, onDelete }: {
+function PageBody({ page, onUpdate }: {
   page: NotePage;
   onUpdate: (p: NotePage) => void;
-  onDelete: () => void;
 }) {
   const [dragSecIdx, setDragSecIdx] = useState<number | null>(null);
   const [overSecIdx, setOverSecIdx] = useState<number | null>(null);
@@ -170,55 +205,50 @@ export function PageEditor({ page, onUpdate, onDelete }: {
   }
 
   return (
-    <div className="nt-page-card">
-      <div className="nt-page-card__header">
-        <GripVerticalIcon size={16} color="var(--color-text-disabled)" />
-        <span className="nt-page-card__label">PAGE</span>
-        <input
-          className="nt-page-card__title"
-          value={page.title}
-          onChange={e => onUpdate({ ...page, title: e.target.value })}
-          placeholder="Page title (optional)"
-        />
-        <button className="nt-field-row__delete" onClick={onDelete} aria-label="Delete page">
-          <TrashIcon size={16} color="var(--color-text-secondary)" />
+    <div className="nt-page-body">
+      {page.sections.map((section, idx) => (
+        <div
+          key={section.id}
+          className={`nt-section-drag-wrap${overSecIdx === idx ? ' nt-section-drag-wrap--over' : ''}${dragSecIdx === idx ? ' nt-section-drag-wrap--dragging' : ''}`}
+          onDragOver={e => { e.preventDefault(); if (dragSecIdxRef.current !== null) setOverSecIdx(idx); }}
+          onDrop={e => { e.preventDefault(); dropSection(idx); }}
+          onDragEnd={() => { dragSecIdxRef.current = null; setDragSecIdx(null); setOverSecIdx(null); }}
+        >
+          <SectionEditor
+            section={section}
+            onUpdate={updated => onUpdate({ ...page, sections: page.sections.map(s => s.id === section.id ? updated : s) })}
+            onDelete={() => onUpdate({ ...page, sections: page.sections.filter(s => s.id !== section.id) })}
+            dragHandleProps={{
+              draggable: true,
+              onDragStart: e => { e.stopPropagation(); startSecDrag(idx); },
+            }}
+          />
+        </div>
+      ))}
+      <FieldList fields={page.fields} onChange={fields => onUpdate({ ...page, fields })} />
+      <div className="nt-page-body__actions">
+        <button
+          className="nt-modal__add-field"
+          onClick={() => {
+            if (page.fields.length > 0) {
+              // Move free fields into the new section
+              const sec = { id: crypto.randomUUID(), title: '', fields: [...page.fields] };
+              onUpdate({ ...page, sections: [...page.sections, sec], fields: [] });
+            } else {
+              onUpdate({ ...page, sections: [...page.sections, newSection()] });
+            }
+          }}
+        >
+          + Add Section
         </button>
-      </div>
-      <div className="nt-page-card__body">
-        {page.sections.map((section, idx) => (
-          <div
-            key={section.id}
-            className={`nt-section-drag-wrap${overSecIdx === idx ? ' nt-section-drag-wrap--over' : ''}${dragSecIdx === idx ? ' nt-section-drag-wrap--dragging' : ''}`}
-            onDragOver={e => { e.preventDefault(); if (dragSecIdxRef.current !== null) setOverSecIdx(idx); }}
-            onDrop={e => { e.preventDefault(); dropSection(idx); }}
-            onDragEnd={() => { dragSecIdxRef.current = null; setDragSecIdx(null); setOverSecIdx(null); }}
-          >
-            <SectionEditor
-              section={section}
-              onUpdate={updated => onUpdate({ ...page, sections: page.sections.map(s => s.id === section.id ? updated : s) })}
-              onDelete={() => onUpdate({ ...page, sections: page.sections.filter(s => s.id !== section.id) })}
-              dragHandleProps={{
-                draggable: true,
-                onDragStart: e => { e.stopPropagation(); startSecDrag(idx); },
-              }}
-            />
-          </div>
-        ))}
-        <FieldList fields={page.fields} onChange={fields => onUpdate({ ...page, fields })} />
-        <div className="nt-page-card__actions">
-          <button
-            className="nt-modal__add-field"
-            onClick={() => onUpdate({ ...page, sections: [...page.sections, newSection()] })}
-          >
-            + Add Section
-          </button>
+        {page.sections.length === 0 && (
           <button
             className="nt-modal__add-field"
             onClick={() => onUpdate({ ...page, fields: [...page.fields, newField()] })}
           >
             + Add Field
           </button>
-        </div>
+        )}
       </div>
     </div>
   );
@@ -234,13 +264,21 @@ export function NoteStructureSection({ fields, pages, onFieldsChange, onPagesCha
   labelClass?: string;
   hintClass?: string;
 }) {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [dragTabIdx, setDragTabIdx] = useState<number | null>(null);
+  const [overTabIdx, setOverTabIdx] = useState<number | null>(null);
+  const dragTabIdxRef = useRef<number | null>(null);
+
   function addPage() {
     if (pages.length === 0) {
-      // Convert flat fields → first page, then add a second empty page
-      onPagesChange([{ ...newPage(), fields: [...fields] }, newPage()]);
+      const first = { ...newPage(), fields: [...fields] };
+      const second = newPage();
+      onPagesChange([first, second]);
       onFieldsChange([]);
+      setActiveIdx(0);
     } else {
       onPagesChange([...pages, newPage()]);
+      setActiveIdx(pages.length);
     }
   }
 
@@ -248,11 +286,33 @@ export function NoteStructureSection({ fields, pages, onFieldsChange, onPagesCha
     onPagesChange(pages.map(p => p.id === updated.id ? updated : p));
   }
 
+  function dropTab(toIdx: number) {
+    const fromIdx = dragTabIdxRef.current;
+    dragTabIdxRef.current = null;
+    setDragTabIdx(null);
+    setOverTabIdx(null);
+    if (fromIdx === null || fromIdx === toIdx) return;
+    const activePageId = pages[clampedIdx]?.id;
+    const next = [...pages];
+    const [moved] = next.splice(fromIdx, 1);
+    next.splice(toIdx, 0, moved);
+    onPagesChange(next);
+    const newActiveIdx = next.findIndex(p => p.id === activePageId);
+    if (newActiveIdx !== -1) setActiveIdx(newActiveIdx);
+  }
+
   function deletePage(id: string) {
+    const deletedIdx = pages.findIndex(p => p.id === id);
     const next = pages.filter(p => p.id !== id);
     if (next.length === 0) onFieldsChange([]);
     onPagesChange(next);
+    setActiveIdx(Math.max(0, Math.min(activeIdx, next.length - 1)));
+    // If deleted tab was before active, shift index down
+    if (deletedIdx < activeIdx) setActiveIdx(activeIdx - 1);
   }
+
+  const clampedIdx = Math.min(activeIdx, pages.length - 1);
+  const activePage = pages[clampedIdx];
 
   return (
     <div className="nt-modal__fields-section">
@@ -260,7 +320,7 @@ export function NoteStructureSection({ fields, pages, onFieldsChange, onPagesCha
         <div className={labelClass}>Note Structure</div>
         <div className={hintClass}>
           {pages.length > 0
-            ? 'Organize fields into pages and sections. Drag to reorder fields.'
+            ? 'Organize fields into pages and sections. Drag to reorder.'
             : 'Define the fields in this note type. Optionally organize with pages and sections.'}
         </div>
       </div>
@@ -279,17 +339,41 @@ export function NoteStructureSection({ fields, pages, onFieldsChange, onPagesCha
         </>
       ) : (
         <>
-          {pages.map(page => (
-            <PageEditor
-              key={page.id}
-              page={page}
-              onUpdate={updatePage}
-              onDelete={() => deletePage(page.id)}
-            />
-          ))}
-          <button className="nt-modal__add-field" onClick={addPage}>
-            + Add Page
-          </button>
+          <div className="nt-page-tabs">
+            {pages.map((page, idx) => (
+              <div
+                key={page.id}
+                className={`nt-page-tab${clampedIdx === idx ? ' nt-page-tab--active' : ''}${dragTabIdx === idx ? ' nt-page-tab--dragging' : ''}${overTabIdx === idx && dragTabIdx !== idx ? ' nt-page-tab--over' : ''}`}
+                onClick={() => setActiveIdx(idx)}
+                draggable
+                onDragStart={() => { dragTabIdxRef.current = idx; setDragTabIdx(idx); }}
+                onDragOver={e => { e.preventDefault(); setOverTabIdx(idx); }}
+                onDrop={e => { e.preventDefault(); dropTab(idx); }}
+                onDragEnd={() => { dragTabIdxRef.current = null; setDragTabIdx(null); setOverTabIdx(null); }}
+              >
+                <input
+                  className="nt-page-tab__input"
+                  value={page.title}
+                  onChange={e => updatePage({ ...page, title: e.target.value })}
+                  placeholder={`Page ${idx + 1}`}
+                />
+                {pages.length > 1 && (
+                  <button
+                    className="nt-page-tab__close"
+                    onClick={e => { e.stopPropagation(); deletePage(page.id); }}
+                    aria-label="Delete page"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ))}
+            <button className="nt-page-tab-add" onClick={addPage}>+ Page</button>
+          </div>
+
+          {activePage && (
+            <PageBody page={activePage} onUpdate={updatePage} />
+          )}
         </>
       )}
     </div>
