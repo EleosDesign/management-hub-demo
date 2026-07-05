@@ -21,12 +21,16 @@ export interface NotePage {
   fields: NoteField[];
 }
 
+export const SITE_OPTIONS = [
+  'Main Office', 'North Campus', 'South Clinic', 'East Branch',
+];
+
 export interface NoteType {
   id: string;
   name: string;
   format: NoteFormat;
   profession: string[];
-  organization: string;
+  sites: string[];
   active: boolean;
   pages: NotePage[];
   sections: NoteSection[];

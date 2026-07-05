@@ -6,7 +6,7 @@ import { NoteStructureSection } from '../../pages/NoteTypes/NoteStructureEditor'
 import { NotePreviewPanel } from '../NotePreviewPanel/NotePreviewPanel';
 import {
   NoteType, NoteFormat, NoteSection,
-  FORMAT_OPTIONS, PROFESSION_OPTIONS,
+  FORMAT_OPTIONS, PROFESSION_OPTIONS, SITE_OPTIONS,
   countFields,
 } from '../../pages/NoteTypes/noteTypeTypes';
 import './EditNoteTypePanel.css';
@@ -25,7 +25,7 @@ interface FormState {
   name: string;
   format: NoteFormat;
   profession: string[];
-  organization: string;
+  sites: string[];
   active: boolean;
   fields: NoteType['fields'];
   sections: NoteSection[];
@@ -37,7 +37,7 @@ function formFromNote(n: NoteType): FormState {
     name: n.name,
     format: n.format,
     profession: n.profession,
-    organization: n.organization,
+    sites: JSON.parse(JSON.stringify(n.sites ?? [])),
     active: n.active,
     fields: JSON.parse(JSON.stringify(n.fields)),
     sections: JSON.parse(JSON.stringify(n.sections ?? [])),
@@ -49,7 +49,7 @@ function isDirty(original: NoteType, form: FormState): boolean {
   return (
     form.name !== original.name ||
     form.format !== original.format ||
-    form.organization !== original.organization ||
+    JSON.stringify([...form.sites].sort()) !== JSON.stringify([...(original.sites ?? [])].sort()) ||
     form.active !== original.active ||
     JSON.stringify([...form.profession].sort()) !== JSON.stringify([...original.profession].sort()) ||
     JSON.stringify(form.fields) !== JSON.stringify(original.fields) ||
@@ -60,7 +60,7 @@ function isDirty(original: NoteType, form: FormState): boolean {
 
 export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDuplicate, existingNames, focusName }: EditNoteTypePanelProps) {
   const [form, setForm] = useState<FormState>(() =>
-    noteType ? formFromNote(noteType) : { name: '', format: 'Individual', profession: [], organization: '', active: true, fields: [], sections: [], pages: [] }
+    noteType ? formFromNote(noteType) : { name: '', format: 'Individual', profession: [], sites: [], active: true, fields: [], sections: [], pages: [] }
   );
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -103,7 +103,7 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDupli
 
   const totalFields = countFields(form.pages, form.fields, form.sections);
   const nameTaken = existingNames.some(n => n.toLowerCase() === form.name.trim().toLowerCase());
-  const canSave = form.name.trim() !== '' && !nameTaken && form.profession.length > 0 && form.organization.trim() !== '' && totalFields > 0 && isDirty(noteType, form);
+  const canSave = form.name.trim() !== '' && !nameTaken && form.profession.length > 0 && form.sites.length > 0 && totalFields > 0 && isDirty(noteType, form);
 
   function handleSave() {
     if (!canSave) return;
@@ -112,7 +112,7 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDupli
       name: form.name.trim(),
       format: form.format,
       profession: form.profession,
-      organization: form.organization,
+      sites: form.sites,
       active: form.active,
       fields: form.pages.length > 0 ? [] : form.fields,
       sections: form.pages.length > 0 ? [] : form.sections,
@@ -162,15 +162,22 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDupli
 
           <div className="edit-panel__identity">
             <div className="edit-panel__name-row">
-              <input
-                ref={nameInputRef}
-                id="enp-name"
-                className="edit-panel__name edit-panel__name--input"
-                value={form.name}
-                onChange={e => patch({ name: e.target.value })}
-                aria-label="Note type name"
-                aria-describedby={nameTaken ? 'enp-name-error' : undefined}
-              />
+              {focusName ? (
+                <input
+                  ref={nameInputRef}
+                  id="enp-name"
+                  className="edit-panel__name edit-panel__name--input"
+                  value={form.name}
+                  onChange={e => patch({ name: e.target.value })}
+                  aria-label="Note type name"
+                  aria-describedby={nameTaken ? 'enp-name-error' : undefined}
+                />
+              ) : (
+                <>
+                  <span id="enp-name" className="edit-panel__name">{form.name}</span>
+                  <span className="edit-panel__badge"><span className="edit-panel__badge-text">{noteType.format}</span></span>
+                </>
+              )}
               <div className="edit-panel__menu-wrapper" ref={menuRef}>
               <button
                 className="edit-panel__more-btn"
@@ -197,7 +204,7 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDupli
               )}
               </div>
             </div>
-            <span className="edit-panel__badge"><span className="edit-panel__badge-text">{noteType.format}</span></span>
+            {focusName && <span className="edit-panel__badge"><span className="edit-panel__badge-text">{noteType.format}</span></span>}
             {nameTaken && <p id="enp-name-error" className="nt-field-error" role="alert">A note type with this name already exists</p>}
           </div>
 
@@ -249,13 +256,19 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDupli
             </div>
 
             <div className="enp-field">
-              <label className="enp-label">Organization <span className="enp-required" aria-hidden="true">*</span></label>
-              <input
-                className="enp-input"
-                value={form.organization}
-                onChange={e => patch({ organization: e.target.value })}
-                placeholder="e.g., Eleos Health"
-              />
+              <label className="enp-label">Site <span className="enp-required" aria-hidden="true">*</span></label>
+              <div className="enp-profession-checkboxes">
+                {SITE_OPTIONS.map(opt => (
+                  <label key={opt} className="enp-profession-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={form.sites.includes(opt)}
+                      onChange={() => patch({ sites: form.sites.includes(opt) ? form.sites.filter(s => s !== opt) : [...form.sites, opt] })}
+                    />
+                    <span>{opt}</span>
+                  </label>
+                ))}
+              </div>
             </div>
 
             <div className="enp-divider" />

@@ -9,7 +9,7 @@ import { NotePreviewPanel } from '../../components/NotePreviewPanel/NotePreviewP
 import { NoteStructureSection } from './NoteStructureEditor';
 import {
   NoteType, NoteFormat, NoteField, NotePage,
-  FORMAT_OPTIONS, FORMAT_DESCRIPTIONS, PROFESSION_OPTIONS,
+  FORMAT_OPTIONS, FORMAT_DESCRIPTIONS, PROFESSION_OPTIONS, SITE_OPTIONS,
   countFields, newField,
 } from './noteTypeTypes';
 import './NoteTypesPage.css';
@@ -19,7 +19,7 @@ import './NoteTypesPage.css';
 const MOCK_NOTES: NoteType[] = [
   {
     id: '1', name: 'Psychiatry', format: 'Individual', profession: ['Psychiatrist'],
-    organization: 'Eleos Health',
+    sites: ['Main Office'],
     active: true, lastModified: '1/15/2024', sections: [], pages: [],
     fields: [
       { id: 'p1', title: 'Chief Complaint', type: 'Text', options: [] },
@@ -31,7 +31,7 @@ const MOCK_NOTES: NoteType[] = [
   },
   {
     id: '2', name: 'Case Management', format: 'Individual', profession: ['Case Manager'],
-    organization: 'Eleos Health',
+    sites: ['Main Office'],
     active: true, lastModified: '2/10/2024', sections: [], pages: [],
     fields: [
       { id: 'cm1', title: 'Goals Reviewed', type: 'Checkbox', options: ['Housing', 'Employment', 'Benefits', 'Transportation', 'Medical'] },
@@ -42,7 +42,7 @@ const MOCK_NOTES: NoteType[] = [
   },
   {
     id: '3', name: 'Peer Support', format: 'Individual', profession: ['Peer Support Specialist'],
-    organization: 'Eleos Health',
+    sites: ['Main Office'],
     active: true, lastModified: '2/1/2024', sections: [], pages: [],
     fields: [
       { id: 'ps1', title: 'Session Focus', type: 'Radio', options: ['Recovery planning', 'Skill building', 'Crisis support', 'Community connection'] },
@@ -53,7 +53,7 @@ const MOCK_NOTES: NoteType[] = [
   },
   {
     id: '4', name: 'Family Therapy', format: 'Group', profession: ['Therapist'],
-    organization: 'Eleos Health',
+    sites: ['Main Office'],
     active: true, lastModified: '3/12/2024', sections: [], pages: [],
     fields: [
       { id: 'ft1', title: 'Participants Present', type: 'Text', options: [] },
@@ -65,7 +65,7 @@ const MOCK_NOTES: NoteType[] = [
   },
   {
     id: '5', name: 'Play Therapy', format: 'Individual', profession: ['Counselor'],
-    organization: 'Eleos Health',
+    sites: ['Main Office'],
     active: true, lastModified: '2/10/2024', sections: [], pages: [],
     fields: [
       { id: 'pt1', title: 'Play Materials Used', type: 'Text', options: [] },
@@ -76,7 +76,7 @@ const MOCK_NOTES: NoteType[] = [
   },
   {
     id: '6', name: 'Group Therapy', format: 'Group', profession: ['Therapist'],
-    organization: 'Eleos Health',
+    sites: ['Main Office'],
     active: true, lastModified: '3/20/2024', sections: [], pages: [],
     fields: [
       { id: 'gt1', title: 'Group Topic', type: 'Text', options: [] },
@@ -88,7 +88,7 @@ const MOCK_NOTES: NoteType[] = [
   },
   {
     id: '7', name: 'Psychotherapy', format: 'Individual', profession: ['Therapist'],
-    organization: 'Eleos Health',
+    sites: ['Main Office'],
     active: true, lastModified: '3/1/2024',
     fields: [], sections: [],
     pages: [
@@ -126,7 +126,7 @@ const MOCK_NOTES: NoteType[] = [
   },
   {
     id: '8', name: 'Crisis Intervention', format: 'Individual', profession: ['Counselor'],
-    organization: 'Eleos Health',
+    sites: ['Main Office'],
     active: false, lastModified: '10/15/2024', sections: [], pages: [],
     fields: [
       { id: 'ci1', title: 'Crisis Description', type: 'Text', options: [] },
@@ -170,7 +170,7 @@ function AddNoteTypeModal({ open, onClose, onSave, existingNames }: {
   const [name, setName] = useState('');
   const [format, setFormat] = useState<NoteFormat>('Individual');
   const [profession, setProfession] = useState<string[]>([]);
-  const [organization, setOrganization] = useState('');
+  const [sites, setSites] = useState<string[]>([]);
   const [active, setActive] = useState(true);
   const [fields, setFields] = useState(DEFAULT_FIELDS.map(f => ({ ...f, id: crypto.randomUUID() })));
   const [sections, setSections] = useState<NoteType['sections']>([]);
@@ -185,7 +185,7 @@ function AddNoteTypeModal({ open, onClose, onSave, existingNames }: {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function resetForm() {
-    setName(''); setFormat('Individual'); setProfession([]); setOrganization(''); setActive(true);
+    setName(''); setFormat('Individual'); setProfession([]); setSites([]); setActive(true);
     setFields(DEFAULT_FIELDS.map(f => ({ ...f, id: crypto.randomUUID() })));
     setSections([]);
     setPages([]);
@@ -199,7 +199,7 @@ function AddNoteTypeModal({ open, onClose, onSave, existingNames }: {
     if (!isValid) return;
     onSave({
       id: crypto.randomUUID(),
-      name: name.trim(), format, profession, organization, active,
+      name: name.trim(), format, profession, sites, active,
       fields: pages.length > 0 ? [] : fields,
       sections: pages.length > 0 ? [] : sections,
       pages,
@@ -288,7 +288,7 @@ function AddNoteTypeModal({ open, onClose, onSave, existingNames }: {
   }
 
   const nameTaken = existingNames.some(n => n.toLowerCase() === name.trim().toLowerCase());
-  const isValid = name.trim().length > 0 && !nameTaken && profession.length > 0 && organization.trim() !== '' && countFields(pages, fields, sections) > 0;
+  const isValid = name.trim().length > 0 && !nameTaken && profession.length > 0 && sites.length > 0 && countFields(pages, fields, sections) > 0;
 
   return (
     <Modal
@@ -350,13 +350,19 @@ function AddNoteTypeModal({ open, onClose, onSave, existingNames }: {
       </div>
 
       <div className="nt-modal__field">
-        <label className="nt-modal__label">Organization <span className="nt-modal__required">*</span></label>
-        <input
-          className="nt-modal__input"
-          value={organization}
-          onChange={e => setOrganization(e.target.value)}
-          placeholder="e.g., Eleos Health"
-        />
+        <label className="nt-modal__label">Site <span className="nt-modal__required">*</span></label>
+        <div className="nt-profession-checkboxes">
+          {SITE_OPTIONS.map(opt => (
+            <label key={opt} className="nt-profession-checkbox">
+              <input
+                type="checkbox"
+                checked={sites.includes(opt)}
+                onChange={() => setSites(prev => prev.includes(opt) ? prev.filter(s => s !== opt) : [...prev, opt])}
+              />
+              <span>{opt}</span>
+            </label>
+          ))}
+        </div>
       </div>
 
       <div className="nt-modal__divider" />
@@ -502,7 +508,7 @@ export function NoteTypesPage() {
 
   const filtered = notes.filter(n =>
     n.name.toLowerCase().includes(search.toLowerCase()) ||
-    n.organization.toLowerCase().includes(search.toLowerCase())
+    n.sites.some(s => s.toLowerCase().includes(search.toLowerCase()))
   );
 
   const sorted = sortCol ? [...filtered].sort((a, b) => {
@@ -510,7 +516,7 @@ export function NoteTypesPage() {
     if (sortCol === 'name') { av = a.name; bv = b.name; }
     else if (sortCol === 'format') { av = a.format; bv = b.format; }
     else if (sortCol === 'profession') { av = a.profession.join(', '); bv = b.profession.join(', '); }
-    else if (sortCol === 'organization') { av = a.organization; bv = b.organization; }
+    else if (sortCol === 'sites') { av = a.sites.join(', '); bv = b.sites.join(', '); }
     else if (sortCol === 'status') { av = a.active ? 'Active' : 'Inactive'; bv = b.active ? 'Active' : 'Inactive'; }
     else if (sortCol === 'lastModified') { av = a.lastModified; bv = b.lastModified; }
     return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
@@ -579,7 +585,7 @@ export function NoteTypesPage() {
                   ['name', 'Name', 'nt-table__th--name'],
                   ['format', 'Service Type', ''],
                   ['profession', 'Profession', ''],
-                  ['organization', 'Organization', 'nt-table__th--desc'],
+                  ['sites', 'Site', 'nt-table__th--desc'],
                   ['status', 'Status', ''],
                   ['lastModified', 'Last Modified', 'nt-table__th--date'],
                 ] as [string, string, string][]).map(([col, label, extra]) => (
@@ -622,7 +628,7 @@ export function NoteTypesPage() {
                   <td className="nt-table__name">{note.name}</td>
                   <td><span className="nt-format-badge">{note.format}</span></td>
                   <td>{note.profession.join(', ')}</td>
-                  <td className="nt-table__desc">{note.organization}</td>
+                  <td className="nt-table__desc">{note.sites.join(', ')}</td>
                   <td>
                     <span className={`nt-status-badge nt-status-badge--${note.active ? 'active' : 'inactive'}`}>
                       {note.active ? 'Active' : 'Inactive'}

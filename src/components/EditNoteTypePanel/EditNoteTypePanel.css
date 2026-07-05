@@ -14,6 +14,11 @@
   width: 100%;
 }
 
+.enp-panel .edit-panel__menu-wrapper {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .edit-panel__name--input {
   background: none;
   border: none;
