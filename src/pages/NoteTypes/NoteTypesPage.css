@@ -719,6 +719,27 @@
 
 .nt-import-zone__clear:hover { color: var(--color-text-primary); }
 
+.nt-import-zone__staged-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nt-import-zone__analyze-btn {
+  padding: 5px 14px;
+  background: var(--color-primary-main);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.nt-import-zone__analyze-btn:hover { opacity: 0.88; }
+
 .nt-import-divider {
   display: flex;
   align-items: center;
@@ -1013,6 +1034,34 @@
 }
 
 /* Field options */
+
+.nt-field-context {
+  padding: 0 12px 8px 38px;
+}
+
+.nt-field-context__input {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 12px;
+  font-family: var(--font-family);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed var(--color-border-divider);
+  outline: none;
+  padding: 2px 0;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.nt-field-context__input:focus {
+  border-bottom-color: var(--color-primary-main);
+  color: var(--color-text-primary);
+}
+
+.nt-field-context__input::placeholder {
+  color: var(--color-text-disabled);
+  font-style: italic;
+}
 
 .nt-field-options {
   padding: 0 12px 10px 38px;

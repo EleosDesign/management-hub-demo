@@ -129,6 +129,14 @@ export function FieldList({ fields, onChange }: { fields: NoteField[]; onChange:
               <TrashIcon size={16} color="var(--color-text-secondary)" />
             </button>
           </div>
+          <div className="nt-field-context">
+            <input
+              className="nt-field-context__input"
+              value={f.context ?? ''}
+              onChange={e => update(f.id, { context: e.target.value || undefined })}
+              placeholder="Context (optional)"
+            />
+          </div>
           {HAS_OPTIONS.includes(f.type) && (
             <div className="nt-field-options">
               <div className="nt-field-options__label">Options</div>

@@ -145,7 +145,7 @@ const DEFAULT_FIELDS = [
 
 // ─── Add Note Type Modal ──────────────────────────────────────────────────────
 
-type ImportStatus = 'idle' | 'loading' | 'done' | 'error';
+type ImportStatus = 'idle' | 'staged' | 'loading' | 'done' | 'error';
 
 const DEMO_IMPORT_NAME = 'Outpatient Progress Note';
 const DEMO_IMPORT_FIELDS = [
@@ -175,6 +175,7 @@ function AddNoteTypeModal({ open, onClose, onSave, existingNames }: {
   const [pages, setPages] = useState<NoteType['pages']>([]);
   const [importStatus, setImportStatus] = useState<ImportStatus>('idle');
   const [importFileName, setImportFileName] = useState('');
+  const [stagedFiles, setStagedFiles] = useState<File[]>([]);
   const [importError, setImportError] = useState('');
   const [dropOver, setDropOver] = useState(false);
   const [importMode, setImportMode] = useState<'file' | 'paste'>('file');
@@ -187,7 +188,7 @@ function AddNoteTypeModal({ open, onClose, onSave, existingNames }: {
     setFields(DEFAULT_FIELDS.map(f => ({ ...f, id: crypto.randomUUID() })));
     setSections([]);
     setPages([]);
-    setImportStatus('idle'); setImportFileName(''); setImportError('');
+    setImportStatus('idle'); setImportFileName(''); setImportError(''); setStagedFiles([]);
     setImportMode('file'); setPasteJson(''); setPasteError('');
   }
 
@@ -260,9 +261,18 @@ function AddNoteTypeModal({ open, onClose, onSave, existingNames }: {
     });
   }
 
+  function stageFiles(files: File[]) {
+    if (!files.length) return;
+    const label = files.length === 1 ? files[0].name : `${files[0].name} +${files.length - 1} more`;
+    setStagedFiles(files);
+    setImportFileName(label);
+    setImportStatus('staged');
+    setImportError('');
+  }
+
   function onFileInput(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
-    if (files.length) handleFiles(files);
+    if (files.length) stageFiles(files);
     e.target.value = '';
   }
 
@@ -270,7 +280,12 @@ function AddNoteTypeModal({ open, onClose, onSave, existingNames }: {
     e.preventDefault();
     setDropOver(false);
     const files = Array.from(e.dataTransfer.files ?? []);
-    if (files.length) handleFiles(files);
+    if (files.length) stageFiles(files);
+  }
+
+  function handleAnalyze() {
+    handleFiles(stagedFiles);
+    setStagedFiles([]);
   }
 
   function handlePasteApply() {
@@ -401,6 +416,24 @@ function AddNoteTypeModal({ open, onClose, onSave, existingNames }: {
                   <button className="nt-import-zone__browse" onClick={() => fileInputRef.current?.click()}>or browse</button>
                 </div>
                 <div className="nt-import-zone__hint">JSON, PDF, or screenshot — select multiple</div>
+              </>
+            )}
+            {importStatus === 'staged' && (
+              <>
+                <div className="nt-import-zone__icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                </div>
+                <div className="nt-import-zone__text"><strong>{importFileName}</strong> ready to analyze</div>
+                <div className="nt-import-zone__staged-actions">
+                  <button className="nt-import-zone__analyze-btn" onClick={handleAnalyze}>
+                    Analyze file{stagedFiles.length > 1 ? 's' : ''}
+                  </button>
+                  <button className="nt-import-zone__clear" onClick={() => { setImportStatus('idle'); setStagedFiles([]); setImportFileName(''); }}>Remove</button>
+                </div>
               </>
             )}
             {importStatus === 'loading' && (

@@ -6,6 +6,7 @@ export interface NoteField {
   title: string;
   type: FieldType;
   options: string[];
+  context?: string;
 }
 
 export interface NoteSection {
