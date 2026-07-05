@@ -520,9 +520,7 @@
 
 .nt-profession-checkbox--all {
   font-weight: var(--font-weight-medium);
-  padding-bottom: 4px;
   margin-bottom: 2px;
-  border-bottom: 1px solid var(--color-border-divider);
   width: 100%;
 }
 
