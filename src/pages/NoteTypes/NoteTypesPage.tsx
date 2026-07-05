@@ -263,11 +263,24 @@ function AddNoteTypeModal({ open, onClose, onSave, existingNames }: {
 
   function stageFiles(files: File[]) {
     if (!files.length) return;
-    const label = files.length === 1 ? files[0].name : `${files[0].name} +${files.length - 1} more`;
-    setStagedFiles(files);
-    setImportFileName(label);
+    setStagedFiles(prev => {
+      const existingNames = new Set(prev.map(f => f.name));
+      const merged = [...prev, ...files.filter(f => !existingNames.has(f.name))];
+      const label = merged.length === 1 ? merged[0].name : `${merged.length} files`;
+      setImportFileName(label);
+      return merged;
+    });
     setImportStatus('staged');
     setImportError('');
+  }
+
+  function removeStagedFile(name: string) {
+    setStagedFiles(prev => {
+      const next = prev.filter(f => f.name !== name);
+      if (next.length === 0) { setImportStatus('idle'); setImportFileName(''); }
+      else setImportFileName(next.length === 1 ? next[0].name : `${next.length} files`);
+      return next;
+    });
   }
 
   function onFileInput(e: React.ChangeEvent<HTMLInputElement>) {
@@ -419,22 +432,26 @@ function AddNoteTypeModal({ open, onClose, onSave, existingNames }: {
               </>
             )}
             {importStatus === 'staged' && (
-              <>
-                <div className="nt-import-zone__icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="17 8 12 3 7 8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
-                  </svg>
-                </div>
-                <div className="nt-import-zone__text"><strong>{importFileName}</strong> ready to analyze</div>
-                <div className="nt-import-zone__staged-actions">
-                  <button className="nt-import-zone__analyze-btn" onClick={handleAnalyze}>
-                    Analyze file{stagedFiles.length > 1 ? 's' : ''}
+              <div className="nt-import-zone__staged">
+                <div className="nt-import-zone__file-chips">
+                  {stagedFiles.map(f => (
+                    <span key={f.name} className="nt-import-zone__chip">
+                      <span className="nt-import-zone__chip-name">{f.name}</span>
+                      <button
+                        className="nt-import-zone__chip-remove"
+                        onClick={() => removeStagedFile(f.name)}
+                        aria-label={`Remove ${f.name}`}
+                      >×</button>
+                    </span>
+                  ))}
+                  <button className="nt-import-zone__browse nt-import-zone__add-more" onClick={() => fileInputRef.current?.click()}>
+                    + Add more
                   </button>
-                  <button className="nt-import-zone__clear" onClick={() => { setImportStatus('idle'); setStagedFiles([]); setImportFileName(''); }}>Remove</button>
                 </div>
-              </>
+                <button className="nt-import-zone__analyze-btn" onClick={handleAnalyze}>
+                  Analyze file{stagedFiles.length > 1 ? 's' : ''}
+                </button>
+              </div>
             )}
             {importStatus === 'loading' && (
               <>
