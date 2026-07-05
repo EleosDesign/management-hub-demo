@@ -216,6 +216,15 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDupli
             <div className="enp-field">
               <label className="enp-label">Profession <span className="enp-required" aria-hidden="true">*</span></label>
               <div className="enp-profession-checkboxes">
+                <label className="enp-profession-checkbox enp-profession-checkbox--all">
+                  <input
+                    type="checkbox"
+                    checked={form.profession.length === PROFESSION_OPTIONS.length}
+                    ref={el => { if (el) el.indeterminate = form.profession.length > 0 && form.profession.length < PROFESSION_OPTIONS.length; }}
+                    onChange={() => patch({ profession: form.profession.length === PROFESSION_OPTIONS.length ? [] : [...PROFESSION_OPTIONS] })}
+                  />
+                  <span>Select all</span>
+                </label>
                 {PROFESSION_OPTIONS.map(opt => (
                   <label key={opt} className="enp-profession-checkbox">
                     <input
@@ -233,6 +242,15 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDupli
             <div className="enp-field">
               <label className="enp-label">Site <span className="enp-required" aria-hidden="true">*</span></label>
               <div className="enp-profession-checkboxes">
+                <label className="enp-profession-checkbox enp-profession-checkbox--all">
+                  <input
+                    type="checkbox"
+                    checked={form.sites.length === SITE_OPTIONS.length}
+                    ref={el => { if (el) el.indeterminate = form.sites.length > 0 && form.sites.length < SITE_OPTIONS.length; }}
+                    onChange={() => patch({ sites: form.sites.length === SITE_OPTIONS.length ? [] : [...SITE_OPTIONS] })}
+                  />
+                  <span>Select all</span>
+                </label>
                 {SITE_OPTIONS.map(opt => (
                   <label key={opt} className="enp-profession-checkbox">
                     <input

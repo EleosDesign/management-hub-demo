@@ -351,6 +351,15 @@ function AddNoteTypeModal({ open, onClose, onSave, existingNames }: {
       <div className="nt-modal__field">
         <label className="nt-modal__label">Profession <span className="nt-modal__required">*</span></label>
         <div className="nt-profession-checkboxes">
+          <label className="nt-profession-checkbox nt-profession-checkbox--all">
+            <input
+              type="checkbox"
+              checked={profession.length === PROFESSION_OPTIONS.length}
+              ref={el => { if (el) el.indeterminate = profession.length > 0 && profession.length < PROFESSION_OPTIONS.length; }}
+              onChange={() => setProfession(profession.length === PROFESSION_OPTIONS.length ? [] : [...PROFESSION_OPTIONS])}
+            />
+            <span>Select all</span>
+          </label>
           {PROFESSION_OPTIONS.map(opt => (
             <label key={opt} className="nt-profession-checkbox">
               <input
@@ -368,6 +377,15 @@ function AddNoteTypeModal({ open, onClose, onSave, existingNames }: {
       <div className="nt-modal__field">
         <label className="nt-modal__label">Site <span className="nt-modal__required">*</span></label>
         <div className="nt-profession-checkboxes">
+          <label className="nt-profession-checkbox nt-profession-checkbox--all">
+            <input
+              type="checkbox"
+              checked={sites.length === SITE_OPTIONS.length}
+              ref={el => { if (el) el.indeterminate = sites.length > 0 && sites.length < SITE_OPTIONS.length; }}
+              onChange={() => setSites(sites.length === SITE_OPTIONS.length ? [] : [...SITE_OPTIONS])}
+            />
+            <span>Select all</span>
+          </label>
           {SITE_OPTIONS.map(opt => (
             <label key={opt} className="nt-profession-checkbox">
               <input
