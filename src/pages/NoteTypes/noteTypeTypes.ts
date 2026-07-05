@@ -5,6 +5,7 @@ export interface NoteField {
   id: string;
   title: string;
   type: FieldType;
+  multiSelect?: boolean;
   options: string[];
   context?: string;
 }

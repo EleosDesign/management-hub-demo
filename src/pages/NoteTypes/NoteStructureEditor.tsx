@@ -29,6 +29,7 @@ export function FieldList({ fields, onChange }: { fields: NoteField[]; onChange:
       if (f.id !== id) return f;
       const u = { ...f, ...patch };
       if (patch.type && !HAS_OPTIONS.includes(patch.type as FieldType)) u.options = [];
+      if (patch.type && patch.type !== 'Dropdown') u.multiSelect = undefined;
       return u;
     }));
 
@@ -129,6 +130,28 @@ export function FieldList({ fields, onChange }: { fields: NoteField[]; onChange:
               <TrashIcon size={16} color="var(--color-text-secondary)" />
             </button>
           </div>
+          {f.type === 'Dropdown' && (
+            <div className="nt-field-select-type">
+              <label className="nt-field-select-type__option">
+                <input
+                  type="radio"
+                  name={`select-type-${f.id}`}
+                  checked={!f.multiSelect}
+                  onChange={() => update(f.id, { multiSelect: false })}
+                />
+                <span>Single select</span>
+              </label>
+              <label className="nt-field-select-type__option">
+                <input
+                  type="radio"
+                  name={`select-type-${f.id}`}
+                  checked={!!f.multiSelect}
+                  onChange={() => update(f.id, { multiSelect: true })}
+                />
+                <span>Multi-select</span>
+              </label>
+            </div>
+          )}
           <div className="nt-field-context">
             <input
               className="nt-field-context__input"
