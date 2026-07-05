@@ -217,9 +217,11 @@ export function SectionEditor({ section, onUpdate, onDelete, dragHandleProps, fo
 
 // ─── PageBody ─────────────────────────────────────────────────────────────────
 
-function PageBody({ page, onUpdate }: {
+function PageBody({ page, onUpdate, extraAction, borderless }: {
   page: NotePage;
   onUpdate: (p: NotePage) => void;
+  extraAction?: React.ReactNode;
+  borderless?: boolean;
 }) {
   const [dragSecIdx, setDragSecIdx] = useState<number | null>(null);
   const [dropTarget, setDropTarget] = useState<{ idx: number; position: 'before' | 'after' } | null>(null);
@@ -296,7 +298,7 @@ function PageBody({ page, onUpdate }: {
   });
 
   return (
-    <div className="nt-page-body">
+    <div className={`nt-page-body${borderless ? ' nt-page-body--borderless' : ''}`}>
       <div {...sentinelProps(0)} />
       {page.sections.map((section, idx) => (
         <div
@@ -336,30 +338,33 @@ function PageBody({ page, onUpdate }: {
       <div {...sentinelProps(page.sections.length)} />
       <FieldList fields={page.fields} onChange={fields => onUpdate({ ...page, fields })} />
       <div className="nt-page-body__actions">
-        <button
-          className="nt-modal__add-field"
-          onClick={() => {
-            if (page.fields.length > 0) {
-              const sec = { id: crypto.randomUUID(), title: '', fields: [...page.fields] };
-              setNewSecId(sec.id);
-              onUpdate({ ...page, sections: [...page.sections, sec], fields: [] });
-            } else {
-              const sec = newSection();
-              setNewSecId(sec.id);
-              onUpdate({ ...page, sections: [...page.sections, sec] });
-            }
-          }}
-        >
-          + Add Section
-        </button>
-        {page.sections.length === 0 && (
+        <div className="nt-page-body__actions-left">
           <button
             className="nt-modal__add-field"
-            onClick={() => onUpdate({ ...page, fields: [...page.fields, newField()] })}
+            onClick={() => {
+              if (page.fields.length > 0) {
+                const sec = { id: crypto.randomUUID(), title: '', fields: [...page.fields] };
+                setNewSecId(sec.id);
+                onUpdate({ ...page, sections: [...page.sections, sec], fields: [] });
+              } else {
+                const sec = newSection();
+                setNewSecId(sec.id);
+                onUpdate({ ...page, sections: [...page.sections, sec] });
+              }
+            }}
           >
-            + Add Field
+            + Add Section
           </button>
-        )}
+          {page.sections.length === 0 && (
+            <button
+              className="nt-modal__add-field"
+              onClick={() => onUpdate({ ...page, fields: [...page.fields, newField()] })}
+            >
+              + Add Field
+            </button>
+          )}
+        </div>
+        {extraAction && <div className="nt-page-body__actions-right">{extraAction}</div>}
       </div>
     </div>
   );
@@ -367,10 +372,12 @@ function PageBody({ page, onUpdate }: {
 
 // ─── NoteStructureSection ─────────────────────────────────────────────────────
 
-export function NoteStructureSection({ fields, pages, onFieldsChange, onPagesChange, labelClass = 'nt-modal__label', hintClass = 'nt-modal__fields-hint' }: {
+export function NoteStructureSection({ fields, sections = [], pages, onFieldsChange, onSectionsChange, onPagesChange, labelClass = 'nt-modal__label', hintClass = 'nt-modal__fields-hint' }: {
   fields: NoteField[];
+  sections?: NoteSection[];
   pages: NotePage[];
   onFieldsChange: (f: NoteField[]) => void;
+  onSectionsChange?: (s: NoteSection[]) => void;
   onPagesChange: (p: NotePage[]) => void;
   labelClass?: string;
   hintClass?: string;
@@ -382,10 +389,11 @@ export function NoteStructureSection({ fields, pages, onFieldsChange, onPagesCha
 
   function addPage() {
     if (pages.length === 0) {
-      const first = { ...newPage(), fields: [...fields] };
+      const first = { ...newPage(), fields: [...fields], sections: [...sections] };
       const second = newPage();
       onPagesChange([first, second]);
       onFieldsChange([]);
+      onSectionsChange?.([]);
       setActiveIdx(0);
     } else {
       onPagesChange([...pages, newPage()]);
@@ -438,15 +446,14 @@ export function NoteStructureSection({ fields, pages, onFieldsChange, onPagesCha
 
       {pages.length === 0 ? (
         <>
-          <FieldList fields={fields} onChange={onFieldsChange} />
-          <div className="nt-structure-actions">
-            <button className="nt-modal__add-field" onClick={() => onFieldsChange([...fields, newField()])}>
-              + Add Field
-            </button>
-            <button className="nt-add-page-btn" onClick={addPage}>
-              + Add Page
-            </button>
-          </div>
+          <PageBody
+            page={{ id: '__virtual__', title: '', sections, fields }}
+            onUpdate={p => { onSectionsChange?.(p.sections); onFieldsChange(p.fields); }}
+            borderless
+            extraAction={
+              <button className="nt-add-page-btn" onClick={addPage}>+ Add Page</button>
+            }
+          />
         </>
       ) : (
         <>

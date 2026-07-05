@@ -1,5 +1,5 @@
 import React, { useState, useRef, useLayoutEffect } from 'react';
-import { NoteField, NotePage, HAS_OPTIONS } from '../../pages/NoteTypes/noteTypeTypes';
+import { NoteField, NoteSection, NotePage, HAS_OPTIONS } from '../../pages/NoteTypes/noteTypeTypes';
 
 function FieldPreviewCard({ field }: { field: NoteField }) {
   const hasOpts = HAS_OPTIONS.includes(field.type) && field.options.length > 0;
@@ -41,7 +41,7 @@ function FieldPreviewCard({ field }: { field: NoteField }) {
   );
 }
 
-export function NotePreviewPanel({ pages, fields }: { pages: NotePage[]; fields: NoteField[] }) {
+export function NotePreviewPanel({ pages, sections = [], fields }: { pages: NotePage[]; sections?: NoteSection[]; fields: NoteField[] }) {
   const [previewIdx, setPreviewIdx] = useState(0);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -72,8 +72,8 @@ export function NotePreviewPanel({ pages, fields }: { pages: NotePage[]; fields:
   const clampedIdx = Math.min(previewIdx, Math.max(0, pages.length - 1));
   const activePage = pages[clampedIdx];
   const flatFields = pages.length === 0 ? fields : (activePage?.fields ?? []);
-  const sections = activePage?.sections ?? [];
-  const isEmpty = pages.length === 0 && fields.length === 0;
+  const activeSections = pages.length === 0 ? sections : (activePage?.sections ?? []);
+  const isEmpty = pages.length === 0 && fields.length === 0 && sections.length === 0;
 
   function toggleSection(id: string) {
     setCollapsed(prev => {
@@ -108,7 +108,7 @@ export function NotePreviewPanel({ pages, fields }: { pages: NotePage[]; fields:
         {isEmpty && (
           <div className="nt-preview__empty">Add fields to see a preview</div>
         )}
-        {sections.map(section => (
+        {activeSections.map(section => (
           <div key={section.id} className="nt-preview__section">
             <button className="nt-preview__section-header" onClick={() => toggleSection(section.id)}>
               <span>{section.title || 'Untitled section'}</span>

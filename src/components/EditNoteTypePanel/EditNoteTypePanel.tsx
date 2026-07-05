@@ -5,7 +5,7 @@ import { XIcon, ChevronDownIcon } from '../icons';
 import { NoteStructureSection } from '../../pages/NoteTypes/NoteStructureEditor';
 import { NotePreviewPanel } from '../NotePreviewPanel/NotePreviewPanel';
 import {
-  NoteType, NoteFormat,
+  NoteType, NoteFormat, NoteSection,
   FORMAT_OPTIONS, PROFESSION_OPTIONS,
   countFields,
 } from '../../pages/NoteTypes/noteTypeTypes';
@@ -25,24 +25,22 @@ interface FormState {
   name: string;
   format: NoteFormat;
   profession: string[];
-  otherProfession: string;
-  description: string;
+  organization: string;
   active: boolean;
   fields: NoteType['fields'];
+  sections: NoteSection[];
   pages: NoteType['pages'];
 }
 
 function formFromNote(n: NoteType): FormState {
-  const knownProfessions = n.profession.filter(p => PROFESSION_OPTIONS.includes(p as typeof PROFESSION_OPTIONS[number]));
-  const otherVal = n.profession.find(p => !PROFESSION_OPTIONS.includes(p as typeof PROFESSION_OPTIONS[number]));
   return {
     name: n.name,
     format: n.format,
-    profession: otherVal ? [...knownProfessions, 'Other'] : n.profession,
-    otherProfession: otherVal ?? '',
-    description: n.description,
+    profession: n.profession,
+    organization: n.organization,
     active: n.active,
     fields: JSON.parse(JSON.stringify(n.fields)),
+    sections: JSON.parse(JSON.stringify(n.sections ?? [])),
     pages: JSON.parse(JSON.stringify(n.pages)),
   };
 }
@@ -51,17 +49,18 @@ function isDirty(original: NoteType, form: FormState): boolean {
   return (
     form.name !== original.name ||
     form.format !== original.format ||
-    form.description !== original.description ||
+    form.organization !== original.organization ||
     form.active !== original.active ||
     JSON.stringify([...form.profession].sort()) !== JSON.stringify([...original.profession].sort()) ||
     JSON.stringify(form.fields) !== JSON.stringify(original.fields) ||
+    JSON.stringify(form.sections) !== JSON.stringify(original.sections ?? []) ||
     JSON.stringify(form.pages) !== JSON.stringify(original.pages)
   );
 }
 
 export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDuplicate, existingNames, focusName }: EditNoteTypePanelProps) {
   const [form, setForm] = useState<FormState>(() =>
-    noteType ? formFromNote(noteType) : { name: '', format: 'Individual', profession: [], otherProfession: '', description: '', active: true, fields: [], pages: [] }
+    noteType ? formFromNote(noteType) : { name: '', format: 'Individual', profession: [], organization: '', active: true, fields: [], sections: [], pages: [] }
   );
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -102,23 +101,21 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDupli
 
   if (!noteType) return null;
 
-  const totalFields = countFields(form.pages, form.fields);
+  const totalFields = countFields(form.pages, form.fields, form.sections);
   const nameTaken = existingNames.some(n => n.toLowerCase() === form.name.trim().toLowerCase());
-  const canSave = form.name.trim() !== '' && !nameTaken && form.profession.length > 0 && totalFields > 0 && isDirty(noteType, form);
+  const canSave = form.name.trim() !== '' && !nameTaken && form.profession.length > 0 && form.organization.trim() !== '' && totalFields > 0 && isDirty(noteType, form);
 
   function handleSave() {
     if (!canSave) return;
-    const savedProfession = form.profession.map(p =>
-      p === 'Other' && form.otherProfession.trim() ? form.otherProfession.trim() : p
-    );
     onSave({
       ...noteType!,
       name: form.name.trim(),
       format: form.format,
-      profession: savedProfession,
-      description: form.description,
+      profession: form.profession,
+      organization: form.organization,
       active: form.active,
       fields: form.pages.length > 0 ? [] : form.fields,
+      sections: form.pages.length > 0 ? [] : form.sections,
       pages: form.pages,
       lastModified: new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
     });
@@ -211,7 +208,7 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDupli
         {/* Scrollable body — split: form left, preview right */}
         <div className="edit-panel__body enp-body-split">
           <div className="enp-split-preview">
-            <NotePreviewPanel pages={form.pages} fields={form.fields} />
+            <NotePreviewPanel pages={form.pages} sections={form.sections} fields={form.fields} />
           </div>
           <div className="enp-split-form">
             <div className="enp-active-row">
@@ -248,29 +245,27 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDupli
                   </label>
                 ))}
               </div>
-              {form.profession.includes('Other') && (
-                <input
-                  className="enp-input"
-                  placeholder="Please specify…"
-                  aria-label="Other profession — please specify"
-                  value={form.otherProfession}
-                  onChange={e => patch({ otherProfession: e.target.value })}
-                  autoFocus
-                />
-              )}
+
             </div>
 
             <div className="enp-field">
-              <label className="enp-label">Description</label>
-              <textarea className="enp-textarea" value={form.description} onChange={e => patch({ description: e.target.value })} placeholder="Describe what this note type is used for..." rows={3} />
+              <label className="enp-label">Organization <span className="enp-required" aria-hidden="true">*</span></label>
+              <input
+                className="enp-input"
+                value={form.organization}
+                onChange={e => patch({ organization: e.target.value })}
+                placeholder="e.g., Eleos Health"
+              />
             </div>
 
             <div className="enp-divider" />
 
             <NoteStructureSection
               fields={form.fields}
+              sections={form.sections}
               pages={form.pages}
               onFieldsChange={f => patch({ fields: f })}
+              onSectionsChange={s => patch({ sections: s })}
               onPagesChange={p => patch({ pages: p })}
               labelClass="enp-label"
               hintClass="enp-fields-hint"

@@ -1257,11 +1257,25 @@
   gap: 8px;
 }
 
+.nt-page-body--borderless {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+}
+
 .nt-page-body__actions {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 20px;
   padding-top: 2px;
+}
+
+.nt-page-body__actions-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
 .nt-section-card__label {
