@@ -398,9 +398,12 @@
   border-radius: 10px;
   padding: 14px 16px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s, border-color 0.2s;
 }
 
-.nt-preview__body > .nt-preview__field-card {
+
+.nt-preview__body > .nt-preview__field-card,
+.nt-preview__body > div > .nt-preview__field-card {
   margin: 10px 12px;
 }
 
@@ -894,12 +897,33 @@
 
 .nt-field-row-wrap:active { cursor: grabbing; }
 
-.nt-field-row-wrap--over {
-  border-color: var(--color-primary-main);
-  box-shadow: 0 0 0 2px rgba(45, 76, 205, 0.15);
+.nt-field-row-wrap--dragging { opacity: 0.4; }
+
+.nt-drop-sentinel {
+  height: 0;
+  pointer-events: none;
+  border-radius: 2px;
+  transition: background 0.1s;
 }
 
-.nt-field-row-wrap--dragging { opacity: 0.4; }
+.nt-drop-sentinel--visible {
+  height: 8px;
+  pointer-events: all;
+}
+
+.nt-drop-sentinel--active {
+  background: var(--color-primary-main);
+  height: 2px;
+  margin: 2px 0;
+}
+
+.nt-field-row-wrap--drop-before {
+  border-top: 2px solid var(--color-primary-main);
+}
+
+.nt-field-row-wrap--drop-after {
+  border-bottom: 2px solid var(--color-primary-main);
+}
 
 /* Field row top bar */
 
@@ -1256,11 +1280,15 @@
 
 .nt-section-drag-wrap:active { cursor: grabbing; }
 
-.nt-section-drag-wrap--over {
-  box-shadow: 0 0 0 2px var(--color-primary-main);
+.nt-section-drag-wrap--dragging { opacity: 0.4; }
+
+.nt-section-drag-wrap--drop-before {
+  border-top: 2px solid var(--color-primary-main);
 }
 
-.nt-section-drag-wrap--dragging { opacity: 0.4; }
+.nt-section-drag-wrap--drop-after {
+  border-bottom: 2px solid var(--color-primary-main);
+}
 
 .nt-section-card {
   border: 1px solid var(--color-border-divider);

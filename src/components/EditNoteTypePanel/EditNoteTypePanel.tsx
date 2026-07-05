@@ -3,6 +3,7 @@ import { Switch } from '../Switch/Switch';
 import { Modal } from '../Modal/Modal';
 import { XIcon, ChevronDownIcon } from '../icons';
 import { NoteStructureSection } from '../../pages/NoteTypes/NoteStructureEditor';
+import { NotePreviewPanel } from '../NotePreviewPanel/NotePreviewPanel';
 import {
   NoteType, NoteFormat,
   FORMAT_OPTIONS, PROFESSION_OPTIONS,
@@ -207,67 +208,73 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDupli
           <div className="edit-panel__separator" />
         </div>
 
-        {/* Scrollable body */}
-        <div className="edit-panel__body">
-          <div className="enp-field">
-            <label className="enp-label">Note Format <span className="enp-required" aria-hidden="true">*</span></label>
-            <div className="enp-select-wrap">
-              <select className="enp-select" value={form.format} onChange={e => patch({ format: e.target.value as NoteFormat })}>
-                {FORMAT_OPTIONS.map(opt => <option key={opt}>{opt}</option>)}
-              </select>
-              <ChevronDownIcon size={16} color="var(--color-text-secondary)" />
+        {/* Scrollable body — split: form left, preview right */}
+        <div className="edit-panel__body enp-body-split">
+          <div className="enp-split-form">
+            <div className="enp-field">
+              <label className="enp-label">Note Format <span className="enp-required" aria-hidden="true">*</span></label>
+              <div className="enp-select-wrap">
+                <select className="enp-select" value={form.format} onChange={e => patch({ format: e.target.value as NoteFormat })}>
+                  {FORMAT_OPTIONS.map(opt => <option key={opt}>{opt}</option>)}
+                </select>
+                <ChevronDownIcon size={16} color="var(--color-text-secondary)" />
+              </div>
             </div>
-          </div>
 
-          <div className="enp-field">
-            <label className="enp-label">Profession <span className="enp-required" aria-hidden="true">*</span></label>
-            <div className="enp-profession-checkboxes">
-              {PROFESSION_OPTIONS.map(opt => (
-                <label key={opt} className="enp-profession-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={form.profession.includes(opt)}
-                    onChange={() => patch({ profession: form.profession.includes(opt) ? form.profession.filter(p => p !== opt) : [...form.profession, opt] })}
-                  />
-                  <span>{opt}</span>
-                </label>
-              ))}
+            <div className="enp-field">
+              <label className="enp-label">Profession <span className="enp-required" aria-hidden="true">*</span></label>
+              <div className="enp-profession-checkboxes">
+                {PROFESSION_OPTIONS.map(opt => (
+                  <label key={opt} className="enp-profession-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={form.profession.includes(opt)}
+                      onChange={() => patch({ profession: form.profession.includes(opt) ? form.profession.filter(p => p !== opt) : [...form.profession, opt] })}
+                    />
+                    <span>{opt}</span>
+                  </label>
+                ))}
+              </div>
+              {form.profession.includes('Other') && (
+                <input
+                  className="enp-input"
+                  placeholder="Please specify…"
+                  aria-label="Other profession — please specify"
+                  value={form.otherProfession}
+                  onChange={e => patch({ otherProfession: e.target.value })}
+                  autoFocus
+                />
+              )}
             </div>
-            {form.profession.includes('Other') && (
-              <input
-                className="enp-input"
-                placeholder="Please specify…"
-                aria-label="Other profession — please specify"
-                value={form.otherProfession}
-                onChange={e => patch({ otherProfession: e.target.value })}
-                autoFocus
-              />
-            )}
-          </div>
 
-          <div className="enp-field">
-            <label className="enp-label">Description</label>
-            <textarea className="enp-textarea" value={form.description} onChange={e => patch({ description: e.target.value })} placeholder="Describe what this note type is used for..." rows={3} />
-          </div>
-
-          <div className="enp-active-row">
-            <Switch checked={form.active} onChange={val => patch({ active: val })} />
-            <div>
-              <div className="enp-active-label">Active</div>
-              <div className="enp-active-hint">Inactive note types cannot be used for new documentation</div>
+            <div className="enp-field">
+              <label className="enp-label">Description</label>
+              <textarea className="enp-textarea" value={form.description} onChange={e => patch({ description: e.target.value })} placeholder="Describe what this note type is used for..." rows={3} />
             </div>
+
+            <div className="enp-active-row">
+              <Switch checked={form.active} onChange={val => patch({ active: val })} />
+              <div>
+                <div className="enp-active-label">Active</div>
+                <div className="enp-active-hint">Inactive note types cannot be used for new documentation</div>
+              </div>
+            </div>
+
+            <div className="enp-divider" />
+
+            <NoteStructureSection
+              fields={form.fields}
+              pages={form.pages}
+              onFieldsChange={f => patch({ fields: f })}
+              onPagesChange={p => patch({ pages: p })}
+              labelClass="enp-label"
+              hintClass="enp-fields-hint"
+            />
           </div>
 
-          <div className="enp-divider" />
-
-          <NoteStructureSection
-            fields={form.fields}
-            pages={form.pages}
-            onFieldsChange={f => patch({ fields: f })}
-            onPagesChange={p => patch({ pages: p })}
-            labelClass="enp-label"
-            hintClass="enp-fields-hint"
-          />
+          <div className="enp-split-preview">
+            <NotePreviewPanel pages={form.pages} fields={form.fields} />
+          </div>
         </div>
 
         {/* Footer */}

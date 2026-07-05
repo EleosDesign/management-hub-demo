@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useLayoutEffect, useEffect } from 'react';
 import { GripVerticalIcon, TrashIcon, ChevronDownIcon } from '../../components/icons';
 import {
   NoteField, NoteSection, NotePage,
@@ -10,7 +10,7 @@ import {
 
 export function FieldList({ fields, onChange }: { fields: NoteField[]; onChange: (f: NoteField[]) => void }) {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
-  const [overIdx, setOverIdx] = useState<number | null>(null);
+  const [dropTarget, setDropTarget] = useState<{ idx: number; position: 'before' | 'after' } | null>(null);
   const focusOptRef = useRef<{ fid: string; oi: number } | null>(null);
   const optInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
@@ -56,26 +56,60 @@ export function FieldList({ fields, onChange }: { fields: NoteField[]; onChange:
     focusOptRef.current = { fid, oi: insertAt ?? (fields.find(f => f.id === fid)?.options.length ?? 0) };
   };
 
-  const drop = (toIdx: number) => {
-    if (dragIdx === null || dragIdx === toIdx) { setDragIdx(null); setOverIdx(null); return; }
+  const getDropPosition = (e: React.DragEvent, el: HTMLElement): 'before' | 'after' => {
+    const rect = el.getBoundingClientRect();
+    return e.clientY < rect.top + rect.height / 2 ? 'before' : 'after';
+  };
+
+  const drop = (e: React.DragEvent, el: HTMLElement, toIdx: number) => {
+    if (dragIdx === null) { setDropTarget(null); return; }
+    const position = getDropPosition(e, el);
+    let insertAt = position === 'before' ? toIdx : toIdx + 1;
+    if (dragIdx < insertAt) insertAt--;
+    if (dragIdx === insertAt) { setDragIdx(null); setDropTarget(null); return; }
     const next = [...fields];
     const [m] = next.splice(dragIdx, 1);
-    next.splice(toIdx, 0, m);
+    next.splice(insertAt, 0, m);
     onChange(next);
-    setDragIdx(null); setOverIdx(null);
+    setDragIdx(null); setDropTarget(null);
   };
+
+  const dropAt = (insertAt: number) => {
+    if (dragIdx === null) return;
+    let idx = insertAt;
+    if (dragIdx < idx) idx--;
+    if (dragIdx === idx) { setDragIdx(null); setDropTarget(null); return; }
+    const next = [...fields];
+    const [m] = next.splice(dragIdx, 1);
+    next.splice(idx, 0, m);
+    onChange(next);
+    setDragIdx(null); setDropTarget(null);
+  };
+
+  const sentinelProps = (insertAt: number, position: 'before' | 'after') => ({
+    className: `nt-drop-sentinel${dropTarget?.idx === (insertAt === 0 ? -1 : fields.length) && dropTarget.position === position ? ' nt-drop-sentinel--active' : ''}`,
+    onDragOver: (e: React.DragEvent) => { e.preventDefault(); setDropTarget({ idx: insertAt === 0 ? -1 : fields.length, position }); },
+    onDrop: (e: React.DragEvent) => { e.preventDefault(); dropAt(insertAt); },
+    onDragLeave: () => setDropTarget(null),
+  });
 
   return (
     <div className="nt-modal__fields-list">
+      {dragIdx !== null && <div {...sentinelProps(0, 'before')} />}
       {fields.map((f, idx) => (
         <div
           key={f.id}
-          className={`nt-field-row-wrap${overIdx === idx ? ' nt-field-row-wrap--over' : ''}${dragIdx === idx ? ' nt-field-row-wrap--dragging' : ''}`}
+          className={[
+            'nt-field-row-wrap',
+            dragIdx === idx ? 'nt-field-row-wrap--dragging' : '',
+            dropTarget?.idx === idx && dropTarget.position === 'before' ? 'nt-field-row-wrap--drop-before' : '',
+            dropTarget?.idx === idx && dropTarget.position === 'after' ? 'nt-field-row-wrap--drop-after' : '',
+          ].filter(Boolean).join(' ')}
           draggable
           onDragStart={() => setDragIdx(idx)}
-          onDragOver={e => { e.preventDefault(); setOverIdx(idx); }}
-          onDrop={() => drop(idx)}
-          onDragEnd={() => { setDragIdx(null); setOverIdx(null); }}
+          onDragOver={e => { e.preventDefault(); setDropTarget({ idx, position: getDropPosition(e, e.currentTarget) }); }}
+          onDrop={e => { e.preventDefault(); drop(e, e.currentTarget, idx); }}
+          onDragEnd={() => { setDragIdx(null); setDropTarget(null); }}
         >
           <div className="nt-field-row">
             <span className="nt-field-row__grip"><GripVerticalIcon size={16} color="var(--color-text-disabled)" /></span>
@@ -133,18 +167,23 @@ export function FieldList({ fields, onChange }: { fields: NoteField[]; onChange:
           )}
         </div>
       ))}
+      {dragIdx !== null && <div {...sentinelProps(fields.length, 'after')} />}
     </div>
   );
 }
 
 // ─── SectionEditor ────────────────────────────────────────────────────────────
 
-export function SectionEditor({ section, onUpdate, onDelete, dragHandleProps }: {
+export function SectionEditor({ section, onUpdate, onDelete, dragHandleProps, focusTitle }: {
   section: NoteSection;
   onUpdate: (s: NoteSection) => void;
   onDelete: () => void;
   dragHandleProps?: React.HTMLAttributes<HTMLSpanElement>;
+  focusTitle?: boolean;
 }) {
+  const titleRef = useRef<HTMLInputElement>(null);
+  useEffect(() => { if (focusTitle) titleRef.current?.focus(); }, [focusTitle]);
+
   return (
     <div className="nt-section-card">
       <div className="nt-section-card__header">
@@ -153,6 +192,7 @@ export function SectionEditor({ section, onUpdate, onDelete, dragHandleProps }: 
         </span>
         <span className="nt-section-card__label">SECTION</span>
         <input
+          ref={titleRef}
           className="nt-section-card__title"
           value={section.title}
           onChange={e => onUpdate({ ...section, title: e.target.value })}
@@ -182,37 +222,104 @@ function PageBody({ page, onUpdate }: {
   onUpdate: (p: NotePage) => void;
 }) {
   const [dragSecIdx, setDragSecIdx] = useState<number | null>(null);
-  const [overSecIdx, setOverSecIdx] = useState<number | null>(null);
+  const [dropTarget, setDropTarget] = useState<{ idx: number; position: 'before' | 'after' } | null>(null);
+  const [newSecId, setNewSecId] = useState<string | null>(null);
   const dragSecIdxRef = useRef<number | null>(null);
   const pageRef = useRef(page);
   pageRef.current = page;
 
-  function startSecDrag(idx: number) {
-    dragSecIdxRef.current = idx;
-    setDragSecIdx(idx);
-  }
+  // FLIP animation
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const prevSecRectsRef = useRef<Record<string, DOMRect>>({});
 
-  function dropSection(toIdx: number) {
+  useLayoutEffect(() => {
+    const refs = sectionRefs.current;
+    const prevRects = prevSecRectsRef.current;
+    const newRects: Record<string, DOMRect> = {};
+    Object.keys(refs).forEach(id => { if (refs[id]) newRects[id] = refs[id]!.getBoundingClientRect(); });
+    Object.keys(refs).forEach(id => {
+      const el = refs[id];
+      if (!el || !prevRects[id] || !newRects[id]) return;
+      const deltaY = prevRects[id].top - newRects[id].top;
+      if (Math.abs(deltaY) < 1) return;
+      el.style.transition = 'none';
+      el.style.transform = `translateY(${deltaY}px)`;
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        el.style.transition = 'transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        el.style.transform = '';
+      }));
+    });
+    prevSecRectsRef.current = newRects;
+  }, [page.sections]);
+
+  const getDropPosition = (e: React.DragEvent, el: HTMLElement): 'before' | 'after' => {
+    const rect = el.getBoundingClientRect();
+    return e.clientY < rect.top + rect.height / 2 ? 'before' : 'after';
+  };
+
+  function dropSection(e: React.DragEvent, el: HTMLElement, toIdx: number) {
     const fromIdx = dragSecIdxRef.current;
     dragSecIdxRef.current = null;
     setDragSecIdx(null);
-    setOverSecIdx(null);
-    if (fromIdx === null || fromIdx === toIdx) return;
+    setDropTarget(null);
+    if (fromIdx === null) return;
+    const position = getDropPosition(e, el);
+    let insertAt = position === 'before' ? toIdx : toIdx + 1;
+    if (fromIdx < insertAt) insertAt--;
+    if (fromIdx === insertAt) return;
     const next = [...pageRef.current.sections];
     const [moved] = next.splice(fromIdx, 1);
-    next.splice(toIdx, 0, moved);
+    next.splice(insertAt, 0, moved);
     onUpdate({ ...pageRef.current, sections: next });
   }
 
+  function dropAtSentinel(insertAt: number) {
+    const fromIdx = dragSecIdxRef.current;
+    dragSecIdxRef.current = null;
+    setDragSecIdx(null);
+    setDropTarget(null);
+    if (fromIdx === null) return;
+    let idx = insertAt;
+    if (fromIdx < idx) idx--;
+    if (fromIdx === idx) return;
+    const next = [...pageRef.current.sections];
+    const [moved] = next.splice(fromIdx, 1);
+    next.splice(idx, 0, moved);
+    onUpdate({ ...pageRef.current, sections: next });
+  }
+
+  const sentinelProps = (insertAt: number) => ({
+    className: `nt-drop-sentinel${dragSecIdx !== null ? ' nt-drop-sentinel--visible' : ''}${dropTarget?.idx === (insertAt === 0 ? -1 : page.sections.length) ? ' nt-drop-sentinel--active' : ''}`,
+    onDragOver: (e: React.DragEvent) => { e.preventDefault(); setDropTarget({ idx: insertAt === 0 ? -1 : page.sections.length, position: 'before' }); },
+    onDrop: (e: React.DragEvent) => { e.preventDefault(); dropAtSentinel(insertAt); },
+    onDragLeave: () => setDropTarget(null),
+  });
+
   return (
     <div className="nt-page-body">
+      <div {...sentinelProps(0)} />
       {page.sections.map((section, idx) => (
         <div
           key={section.id}
-          className={`nt-section-drag-wrap${overSecIdx === idx ? ' nt-section-drag-wrap--over' : ''}${dragSecIdx === idx ? ' nt-section-drag-wrap--dragging' : ''}`}
-          onDragOver={e => { e.preventDefault(); if (dragSecIdxRef.current !== null) setOverSecIdx(idx); }}
-          onDrop={e => { e.preventDefault(); dropSection(idx); }}
-          onDragEnd={() => { dragSecIdxRef.current = null; setDragSecIdx(null); setOverSecIdx(null); }}
+          ref={el => { sectionRefs.current[section.id] = el; }}
+          className={[
+            'nt-section-drag-wrap',
+            dragSecIdx === idx ? 'nt-section-drag-wrap--dragging' : '',
+            dropTarget?.idx === idx && dropTarget.position === 'before' ? 'nt-section-drag-wrap--drop-before' : '',
+            dropTarget?.idx === idx && dropTarget.position === 'after' ? 'nt-section-drag-wrap--drop-after' : '',
+          ].filter(Boolean).join(' ')}
+          onDragOver={e => {
+            e.preventDefault();
+            if (dragSecIdxRef.current === null) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const threshold = Math.min(40, rect.height * 0.25);
+            const relY = e.clientY - rect.top;
+            if (relY < threshold) setDropTarget({ idx, position: 'before' });
+            else if (relY > rect.height - threshold) setDropTarget({ idx, position: 'after' });
+            else setDropTarget(null);
+          }}
+          onDrop={e => { e.preventDefault(); dropSection(e, e.currentTarget, idx); }}
+          onDragEnd={() => { dragSecIdxRef.current = null; setDragSecIdx(null); setDropTarget(null); }}
         >
           <SectionEditor
             section={section}
@@ -220,22 +327,26 @@ function PageBody({ page, onUpdate }: {
             onDelete={() => onUpdate({ ...page, sections: page.sections.filter(s => s.id !== section.id) })}
             dragHandleProps={{
               draggable: true,
-              onDragStart: e => { e.stopPropagation(); startSecDrag(idx); },
+              onDragStart: e => { e.stopPropagation(); dragSecIdxRef.current = idx; setDragSecIdx(idx); },
             }}
+            focusTitle={newSecId === section.id}
           />
         </div>
       ))}
+      <div {...sentinelProps(page.sections.length)} />
       <FieldList fields={page.fields} onChange={fields => onUpdate({ ...page, fields })} />
       <div className="nt-page-body__actions">
         <button
           className="nt-modal__add-field"
           onClick={() => {
             if (page.fields.length > 0) {
-              // Move free fields into the new section
               const sec = { id: crypto.randomUUID(), title: '', fields: [...page.fields] };
+              setNewSecId(sec.id);
               onUpdate({ ...page, sections: [...page.sections, sec], fields: [] });
             } else {
-              onUpdate({ ...page, sections: [...page.sections, newSection()] });
+              const sec = newSection();
+              setNewSecId(sec.id);
+              onUpdate({ ...page, sections: [...page.sections, sec] });
             }
           }}
         >

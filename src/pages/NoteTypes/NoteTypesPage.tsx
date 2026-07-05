@@ -1,15 +1,16 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '../../components/Button/Button';
 import { Input } from '../../components/Input/Input';
 import { Modal } from '../../components/Modal/Modal';
 import { Switch } from '../../components/Switch/Switch';
 import { SearchIcon, PlusIcon, ChevronDownIcon } from '../../components/icons';
 import { EditNoteTypePanel } from '../../components/EditNoteTypePanel/EditNoteTypePanel';
+import { NotePreviewPanel } from '../../components/NotePreviewPanel/NotePreviewPanel';
 import { NoteStructureSection } from './NoteStructureEditor';
 import {
   NoteType, NoteFormat, NoteField, NotePage,
   FORMAT_OPTIONS, FORMAT_DESCRIPTIONS, PROFESSION_OPTIONS,
-  HAS_OPTIONS, countFields, newField,
+  countFields, newField,
 } from './noteTypeTypes';
 import './NoteTypesPage.css';
 
@@ -142,116 +143,6 @@ const DEFAULT_FIELDS = [
   { id: 'f2', title: 'Assessment', type: 'Text' as const, options: [] },
   { id: 'f3', title: 'Plan', type: 'Text' as const, options: [] },
 ];
-
-// ─── Note Preview ─────────────────────────────────────────────────────────────
-
-function FieldPreviewCard({ field }: { field: NoteField }) {
-  const hasOpts = HAS_OPTIONS.includes(field.type) && field.options.length > 0;
-  return (
-    <div className="nt-preview__field-card nt-preview__field-card--options">
-      <div className="nt-preview__field-name">{field.title || <em>Untitled field</em>}</div>
-      {field.type === 'Text' && (
-        <div className="nt-preview__field-input">Text field</div>
-      )}
-      {field.type === 'Dropdown' && (
-        <select className="nt-preview__field-select" defaultValue="">
-          <option value="" disabled>Select…</option>
-          {(hasOpts ? field.options : []).map((opt, i) => (
-            <option key={i} value={opt}>{opt}</option>
-          ))}
-        </select>
-      )}
-      {field.type === 'Radio' && (
-        <div className="nt-preview__field-options">
-          {(hasOpts ? field.options : ['Option']).map((opt, i) => (
-            <label key={i} className="nt-preview__field-option">
-              <input type="radio" name={field.id} disabled readOnly />
-              <span>{opt}</span>
-            </label>
-          ))}
-        </div>
-      )}
-      {field.type === 'Checkbox' && (
-        <div className="nt-preview__field-options">
-          {(hasOpts ? field.options : ['Option']).map((opt, i) => (
-            <label key={i} className="nt-preview__field-option">
-              <input type="checkbox" disabled readOnly />
-              <span>{opt}</span>
-            </label>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function NotePreviewPanel({ pages, fields }: { pages: NotePage[]; fields: NoteField[] }) {
-  const [previewIdx, setPreviewIdx] = useState(0);
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-
-  const clampedIdx = Math.min(previewIdx, Math.max(0, pages.length - 1));
-  const activePage = pages[clampedIdx];
-  const flatFields = pages.length === 0 ? fields : (activePage?.fields ?? []);
-  const sections = activePage?.sections ?? [];
-  const isEmpty = pages.length === 0 && fields.length === 0;
-
-  function toggleSection(id: string) {
-    setCollapsed(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  }
-
-  return (
-    <div className="nt-preview">
-      <div className="nt-preview__header-label">Preview</div>
-
-      {pages.length > 0 && (
-        <div className="nt-preview__nav">
-          <span className="nt-preview__nav-info">
-            <span className="nt-preview__nav-num">{clampedIdx + 1} of {pages.length}:</span>
-            {' '}<strong>{activePage?.title || `Page ${clampedIdx + 1}`}</strong>
-          </span>
-          <div className="nt-preview__nav-btns">
-            <button className="nt-preview__nav-btn" onClick={() => setPreviewIdx(p => Math.max(0, p - 1))} disabled={clampedIdx === 0}>
-              ‹ Prev
-            </button>
-            <button className="nt-preview__nav-btn" onClick={() => setPreviewIdx(p => Math.min(pages.length - 1, p + 1))} disabled={clampedIdx === pages.length - 1}>
-              Next ›
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="nt-preview__body">
-        {isEmpty && (
-          <div className="nt-preview__empty">Add fields to see a preview</div>
-        )}
-        {sections.map(section => (
-          <div key={section.id} className="nt-preview__section">
-            <button className="nt-preview__section-header" onClick={() => toggleSection(section.id)}>
-              <span>{section.title || 'Untitled section'}</span>
-              <svg
-                className={`nt-preview__section-chevron${collapsed.has(section.id) ? ' nt-preview__section-chevron--collapsed' : ''}`}
-                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-              >
-                <polyline points="18 15 12 9 6 15" />
-              </svg>
-            </button>
-            {!collapsed.has(section.id) && (
-              <div className="nt-preview__section-fields">
-                {section.fields.map(f => <FieldPreviewCard key={f.id} field={f} />)}
-                {section.fields.length === 0 && <div className="nt-preview__section-empty">No fields yet</div>}
-              </div>
-            )}
-          </div>
-        ))}
-        {flatFields.map(f => <FieldPreviewCard key={f.id} field={f} />)}
-      </div>
-    </div>
-  );
-}
 
 // ─── Add Note Type Modal ──────────────────────────────────────────────────────
 
