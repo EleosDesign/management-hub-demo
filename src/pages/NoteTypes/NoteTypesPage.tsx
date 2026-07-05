@@ -307,6 +307,16 @@ function AddNoteTypeModal({ open, onClose, onSave, existingNames }: {
     >
       <div className="nt-modal__split">
       <div className="nt-modal__split-left">
+      <div className="nt-modal__active-row">
+        <Switch checked={active} onChange={setActive} />
+        <div>
+          <div className="nt-modal__active-label">Active</div>
+          <div className="nt-modal__active-hint">Inactive note types cannot be used for new documentation</div>
+        </div>
+      </div>
+
+      <div className="nt-modal__divider" />
+
       <div className="nt-modal__field">
         <label className="nt-modal__label">Note Type Name <span className="nt-modal__required">*</span></label>
         <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g., Psychiatry, Case Management" />
@@ -314,7 +324,7 @@ function AddNoteTypeModal({ open, onClose, onSave, existingNames }: {
       </div>
 
       <div className="nt-modal__field">
-        <label className="nt-modal__label">Note Format <span className="nt-modal__required">*</span></label>
+        <label className="nt-modal__label">Service Type <span className="nt-modal__required">*</span></label>
         <div className="nt-modal__select-wrap">
           <select className="nt-modal__select" value={format} onChange={e => setFormat(e.target.value as NoteFormat)}>
             {FORMAT_OPTIONS.map(opt => <option key={opt}>{opt}</option>)}
@@ -359,16 +369,6 @@ function AddNoteTypeModal({ open, onClose, onSave, existingNames }: {
           placeholder="Describe what this note type is used for..."
           rows={3}
         />
-      </div>
-
-      <div className="nt-modal__divider" />
-
-      <div className="nt-modal__active-row">
-        <Switch checked={active} onChange={setActive} />
-        <div>
-          <div className="nt-modal__active-label">Active</div>
-          <div className="nt-modal__active-hint">Inactive note types cannot be used for new documentation</div>
-        </div>
       </div>
 
       <div className="nt-modal__divider" />
@@ -587,7 +587,7 @@ export function NoteTypesPage() {
               <tr>
                 {([
                   ['name', 'Name', 'nt-table__th--name'],
-                  ['format', 'Format', ''],
+                  ['format', 'Service Type', ''],
                   ['profession', 'Profession', ''],
                   ['description', 'Description', 'nt-table__th--desc'],
                   ['status', 'Status', ''],

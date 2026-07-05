@@ -210,9 +210,22 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDupli
 
         {/* Scrollable body — split: form left, preview right */}
         <div className="edit-panel__body enp-body-split">
+          <div className="enp-split-preview">
+            <NotePreviewPanel pages={form.pages} fields={form.fields} />
+          </div>
           <div className="enp-split-form">
+            <div className="enp-active-row">
+              <Switch checked={form.active} onChange={val => patch({ active: val })} />
+              <div>
+                <div className="enp-active-label">Active</div>
+                <div className="enp-active-hint">Inactive note types cannot be used for new documentation</div>
+              </div>
+            </div>
+
+            <div className="enp-divider" />
+
             <div className="enp-field">
-              <label className="enp-label">Note Format <span className="enp-required" aria-hidden="true">*</span></label>
+              <label className="enp-label">Service Type <span className="enp-required" aria-hidden="true">*</span></label>
               <div className="enp-select-wrap">
                 <select className="enp-select" value={form.format} onChange={e => patch({ format: e.target.value as NoteFormat })}>
                   {FORMAT_OPTIONS.map(opt => <option key={opt}>{opt}</option>)}
@@ -252,14 +265,6 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDupli
               <textarea className="enp-textarea" value={form.description} onChange={e => patch({ description: e.target.value })} placeholder="Describe what this note type is used for..." rows={3} />
             </div>
 
-            <div className="enp-active-row">
-              <Switch checked={form.active} onChange={val => patch({ active: val })} />
-              <div>
-                <div className="enp-active-label">Active</div>
-                <div className="enp-active-hint">Inactive note types cannot be used for new documentation</div>
-              </div>
-            </div>
-
             <div className="enp-divider" />
 
             <NoteStructureSection
@@ -272,9 +277,6 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDupli
             />
           </div>
 
-          <div className="enp-split-preview">
-            <NotePreviewPanel pages={form.pages} fields={form.fields} />
-          </div>
         </div>
 
         {/* Footer */}
