@@ -31,7 +31,6 @@ export interface NoteType {
   format: NoteFormat;
   profession: string[];
   sites: string[];
-  active: boolean;
   pages: NotePage[];
   sections: NoteSection[];
   fields: NoteField[];

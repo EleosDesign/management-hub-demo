@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Switch } from '../Switch/Switch';
 import { Modal } from '../Modal/Modal';
 import { XIcon, ChevronDownIcon } from '../icons';
 import { NoteStructureSection } from '../../pages/NoteTypes/NoteStructureEditor';
@@ -26,7 +25,6 @@ interface FormState {
   format: NoteFormat;
   profession: string[];
   sites: string[];
-  active: boolean;
   fields: NoteType['fields'];
   sections: NoteSection[];
   pages: NoteType['pages'];
@@ -38,7 +36,6 @@ function formFromNote(n: NoteType): FormState {
     format: n.format,
     profession: n.profession,
     sites: JSON.parse(JSON.stringify(n.sites ?? [])),
-    active: n.active,
     fields: JSON.parse(JSON.stringify(n.fields)),
     sections: JSON.parse(JSON.stringify(n.sections ?? [])),
     pages: JSON.parse(JSON.stringify(n.pages)),
@@ -50,7 +47,6 @@ function isDirty(original: NoteType, form: FormState): boolean {
     form.name !== original.name ||
     form.format !== original.format ||
     JSON.stringify([...form.sites].sort()) !== JSON.stringify([...(original.sites ?? [])].sort()) ||
-    form.active !== original.active ||
     JSON.stringify([...form.profession].sort()) !== JSON.stringify([...original.profession].sort()) ||
     JSON.stringify(form.fields) !== JSON.stringify(original.fields) ||
     JSON.stringify(form.sections) !== JSON.stringify(original.sections ?? []) ||
@@ -60,7 +56,7 @@ function isDirty(original: NoteType, form: FormState): boolean {
 
 export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDuplicate, existingNames, focusName }: EditNoteTypePanelProps) {
   const [form, setForm] = useState<FormState>(() =>
-    noteType ? formFromNote(noteType) : { name: '', format: 'Individual', profession: [], sites: [], active: true, fields: [], sections: [], pages: [] }
+    noteType ? formFromNote(noteType) : { name: '', format: 'Individual', profession: [], sites: [], fields: [], sections: [], pages: [] }
   );
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -113,7 +109,6 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDupli
       format: form.format,
       profession: form.profession,
       sites: form.sites,
-      active: form.active,
       fields: form.pages.length > 0 ? [] : form.fields,
       sections: form.pages.length > 0 ? [] : form.sections,
       pages: form.pages,
@@ -131,16 +126,6 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDupli
   function handleDuplicate() {
     setMenuOpen(false);
     onDuplicate(noteType!);
-  }
-
-  function toggleActive() {
-    onSave({
-      ...noteType!,
-      active: !noteType!.active,
-      lastModified: new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
-    });
-    setMenuOpen(false);
-    onClose();
   }
 
   function patch(updates: Partial<FormState>) {
@@ -208,7 +193,7 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDupli
             {nameTaken && <p id="enp-name-error" className="nt-field-error" role="alert">A note type with this name already exists</p>}
           </div>
 
-          <p className="edit-panel__email enp-format-hint">{noteType.active ? 'Active' : 'Inactive'} · Last modified {noteType.lastModified}</p>
+          <p className="edit-panel__email enp-format-hint">Last modified {noteType.lastModified}</p>
           <div className="edit-panel__separator" />
         </div>
 
@@ -218,16 +203,6 @@ export function EditNoteTypePanel({ noteType, onClose, onSave, onDelete, onDupli
             <NotePreviewPanel pages={form.pages} sections={form.sections} fields={form.fields} />
           </div>
           <div className="enp-split-form">
-            <div className="enp-active-row">
-              <Switch checked={form.active} onChange={val => patch({ active: val })} />
-              <div>
-                <div className="enp-active-label">Active</div>
-                <div className="enp-active-hint">Inactive note types cannot be used for new documentation</div>
-              </div>
-            </div>
-
-            <div className="enp-divider" />
-
             <div className="enp-field">
               <label className="enp-label">Service Type <span className="enp-required" aria-hidden="true">*</span></label>
               <div className="enp-select-wrap">
