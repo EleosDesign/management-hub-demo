@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { motion } from "motion/react";
 import "./WorkflowRegistry.css";
 import {
   platformMetrics,
   workflows,
-  authorizationExhaustionDetail,
+  workflowDetails,
   type Domain,
+  type WorkflowId,
   type WorkflowStatus,
 } from "../../data/story";
 import { useNavigate } from "react-router-dom";
@@ -52,10 +54,10 @@ const dimCaptionStatuses: WorkflowStatus[] = ["Draft", "Paused"];
 
 const registryTabs = ["All", "Needs Attention", "Active", "Testing", "Draft", "Paused"];
 
-const selectedWorkflowId = authorizationExhaustionDetail.workflowId;
-
 export default function WorkflowRegistry() {
   const navigate = useNavigate();
+  const [selectedId, setSelectedId] = useState<WorkflowId>(workflows[0].id);
+  const detail = workflowDetails[selectedId];
 
   return (
     <div className="workflow-registry">
@@ -106,9 +108,14 @@ export default function WorkflowRegistry() {
             <div className="wr-rows">
               {workflows.map((wf) => {
                 const meta = statusMeta[wf.status];
-                const selected = wf.id === selectedWorkflowId;
+                const selected = wf.id === selectedId;
                 return (
-                  <div className={`wr-row${selected ? " wr-row--selected" : ""}`} key={wf.id}>
+                  <div
+                    className={`wr-row${selected ? " wr-row--selected" : ""}`}
+                    key={wf.id}
+                    onClick={() => setSelectedId(wf.id)}
+                    style={{ cursor: "pointer" }}
+                  >
                     <div className="wr-row__identity">
                       <img className="wr-row__domain-icon" src={domainIcon[wf.domain]} alt="" />
                       <div className="wr-row__identity-text">
@@ -148,15 +155,15 @@ export default function WorkflowRegistry() {
             <div className="wr-detail__bg" aria-hidden="true" />
             <div className="wr-detail__head">
               <div className="wr-detail__domain">
-                <img src={domainIcon[authorizationExhaustionDetail.domainChip]} alt="" />
-                <span style={{ color: domainLabelColor[authorizationExhaustionDetail.domainChip] }}>
-                  {authorizationExhaustionDetail.domainChip}
+                <img src={domainIcon[detail.domainChip]} alt="" />
+                <span style={{ color: domainLabelColor[detail.domainChip] }}>
+                  {detail.domainChip}
                 </span>
               </div>
               <div className="wr-detail__head-actions">
                 <span className="wr-detail__status-badge">
                   <img src={`${ASSET}/broadcast-fill-teal.svg`} alt="" />
-                  <span>{authorizationExhaustionDetail.status}</span>
+                  <span>{detail.status}</span>
                 </span>
                 <motion.button
                   className="wr-icon-button wr-icon-button--sm"
@@ -170,15 +177,15 @@ export default function WorkflowRegistry() {
             </div>
 
             <div className="wr-detail__title-block">
-              <h2>{authorizationExhaustionDetail.name}</h2>
-              <p>{authorizationExhaustionDetail.purpose}</p>
+              <h2>{detail.name}</h2>
+              <p>{detail.purpose}</p>
             </div>
 
             <div className="wr-detail__impact">
               <div className="wr-detail__impact-text">
                 <span className="wr-detail__impact-label">Measured impact</span>
                 <span className="wr-detail__impact-value">
-                  {authorizationExhaustionDetail.measuredImpact.value}
+                  {detail.measuredImpact.value}
                 </span>
               </div>
               <img src={`${ASSET}/medal-fill.svg`} alt="" />
@@ -186,13 +193,13 @@ export default function WorkflowRegistry() {
 
             <div className="wr-detail__field">
               <span className="wr-detail__field-label">Trigger</span>
-              <span className="wr-detail__field-value">{authorizationExhaustionDetail.trigger}</span>
+              <span className="wr-detail__field-value">{detail.trigger}</span>
             </div>
 
             <div className="wr-detail__field">
               <span className="wr-detail__field-label">Context</span>
               <div className="wr-detail__chips">
-                {authorizationExhaustionDetail.contextChips.map((chip) => (
+                {detail.contextChips.map((chip) => (
                   <span className="wr-detail__chip" key={chip}>
                     {chip}
                   </span>
@@ -203,7 +210,7 @@ export default function WorkflowRegistry() {
             <div className="wr-detail__field">
               <span className="wr-detail__field-label">Agent work</span>
               <ol className="wr-detail__agent-work">
-                {authorizationExhaustionDetail.agentWork.map((step, index) => (
+                {detail.agentWork.map((step, index) => (
                   <li key={step}>
                     <span>{index + 1}.</span> {step}
                   </li>
@@ -214,7 +221,7 @@ export default function WorkflowRegistry() {
             <div className="wr-detail__field">
               <span className="wr-detail__field-label">Actions</span>
               <div className="wr-detail__actions">
-                {authorizationExhaustionDetail.actions.map((action, index) => (
+                {detail.actions.map((action, index) => (
                   <div className="wr-detail__action" key={action.label}>
                     {index > 0 && (
                       <img
