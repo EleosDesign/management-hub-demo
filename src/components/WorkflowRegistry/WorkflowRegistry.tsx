@@ -1,6 +1,5 @@
 import { motion } from "motion/react";
 import "./WorkflowRegistry.css";
-import { PageHeader } from "../PageHeader/PageHeader";
 import {
   platformMetrics,
   workflows,
@@ -61,8 +60,6 @@ export default function WorkflowRegistry() {
   return (
     <div className="workflow-registry">
       <div className="wr-column">
-        <PageHeader />
-
         <header className="wr-header">
           <h1 className="wr-header__title">Workflows Registry</h1>
           <div className="wr-header__actions">

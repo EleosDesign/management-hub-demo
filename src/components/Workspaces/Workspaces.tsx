@@ -1,6 +1,5 @@
 import { motion } from "motion/react";
 import "./Workspaces.css";
-import { PageHeader } from "../PageHeader/PageHeader";
 import { PriorityIcon } from "./PriorityIcon";
 import { DotsIcon } from "./DotsIcon";
 import { pressableButton, pressableIconButton } from "../../motion/interactions";
@@ -86,7 +85,6 @@ export default function Workspaces({ workspaceId }: { workspaceId: WorkspaceId }
     <div className="workspaces">
       <div className="ws-column">
         <div className="ws-frame">
-          <PageHeader />
 
           <div className="ws-card">
             <header className="ws-header" style={{ background: theme.accent }}>
