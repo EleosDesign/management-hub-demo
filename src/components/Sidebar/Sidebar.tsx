@@ -56,7 +56,10 @@ const navItems: NavItem[] = [
     id: 'compliance',
     label: 'Compliance Report',
     icon: <ShieldCheckIcon color="white" />,
-    path: '/compliance-report',
+    children: [
+      { id: 'compliance-report', label: 'Compliance Report', path: '/compliance-report', icon: <ShieldCheckIcon color="white" /> },
+      { id: 'review-rulings', label: 'Review rulings', path: '/review-rulings', icon: <FileCheckIcon color="white" /> },
+    ],
   },
   {
     id: 'eligibility',
@@ -78,7 +81,7 @@ export function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const COLLAPSED_PREFIXES = ['/leadership-report', '/compliance-report', '/eligibility-report', '/ccbhc-tracker', '/workflows'];
+  const COLLAPSED_PREFIXES = ['/leadership-report', '/compliance-report', '/review-rulings', '/eligibility-report', '/ccbhc-tracker', '/workflows'];
 
   useEffect(() => {
     if (COLLAPSED_PREFIXES.some(prefix => location.pathname.startsWith(prefix))) {

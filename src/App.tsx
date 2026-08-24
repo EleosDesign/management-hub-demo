@@ -8,16 +8,14 @@ import { ComplianceReport } from './pages/Reports/ComplianceReport';
 import { EligibilityReport } from './pages/Reports/EligibilityReport';
 import CCBHCTracker from './pages/CCBHCTracker/CCBHCTracker';
 import './styles/globals.css';
-import './styles/workflow-utils.css';
 import './App.css';
 
-const WorkflowsLanding = lazy(() => import('./pages/Workflows/WorkflowsLanding'));
-const WorkflowComposer = lazy(() => import('./pages/Workflows/WorkflowComposer'));
-const WorkflowDetail = lazy(() => import('./pages/Workflows/WorkflowDetail'));
+const WorkflowRegistry = lazy(() => import('./components/WorkflowRegistry/WorkflowRegistry'));
+const CreateWorkflow = lazy(() => import('./components/CreateWorkflow/CreateWorkflow'));
+const Workspaces = lazy(() => import('./components/Workspaces/Workspaces'));
 
 function AppContent() {
   const location = useLocation();
-  // Workflow sub-pages manage their own scroll — need overflow:hidden on wrapper
   const isFullHeight = location.pathname !== '/workflows'
     && location.pathname.startsWith('/workflows');
   return (
@@ -29,12 +27,11 @@ function AppContent() {
           <Route path="/sites" element={<SitesPage />} />
           <Route path="/leadership-report" element={<LeadershipReport />} />
           <Route path="/compliance-report" element={<ComplianceReport />} />
+          <Route path="/review-rulings" element={<Workspaces workspaceId="compliance" />} />
           <Route path="/eligibility-report" element={<EligibilityReport />} />
           <Route path="/ccbhc-tracker" element={<CCBHCTracker />} />
-          <Route path="/workflows" element={<WorkflowsLanding />} />
-          <Route path="/workflows/new" element={<WorkflowComposer />} />
-          <Route path="/workflows/:id" element={<WorkflowDetail />} />
-          <Route path="/workflows/:id/edit" element={<WorkflowComposer />} />
+          <Route path="/workflows" element={<WorkflowRegistry />} />
+          <Route path="/workflows/new" element={<CreateWorkflow />} />
         </Routes>
       </Suspense>
     </div>

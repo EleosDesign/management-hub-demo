@@ -1,0 +1,24 @@
+/**
+ * Inline render of arrow-up-right.svg (exact path data exported from Figma
+ * node 70:4795/70:4811/70:4826 — identical glyph, only the fill differs per
+ * domain). Inlined instead of <img> so `color` can tint it via currentColor,
+ * which an externally-referenced <img src="*.svg"> cannot pick up.
+ */
+export function ArrowUpRightIcon({ color }: { color: string }) {
+  return (
+    <svg width="6" height="6" viewBox="0 0 6 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M0 0.5C0 0.223858 0.223858 0 0.5 0H5.5C5.77614 0 6 0.223858 6 0.5V5.5C6 5.77614 5.77614 6 5.5 6C5.22386 6 5 5.77614 5 5.5V1H0.5C0.223858 1 0 0.776142 0 0.5Z"
+        fill={color}
+      />
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M5.85355 0.146447C6.04882 0.341709 6.04882 0.658291 5.85355 0.853553L0.853553 5.85355C0.658291 6.04882 0.341709 6.04882 0.146447 5.85355C-0.0488155 5.65829 -0.0488155 5.34171 0.146447 5.14645L5.14645 0.146447C5.34171 -0.0488155 5.65829 -0.0488155 5.85355 0.146447Z"
+        fill={color}
+      />
+    </svg>
+  );
+}
