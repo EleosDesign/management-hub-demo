@@ -54,10 +54,10 @@ const navItems: NavItem[] = [
   },
   {
     id: 'compliance',
-    label: 'Compliance Report',
+    label: 'Compliance',
     icon: <ShieldCheckIcon color="white" />,
     children: [
-      { id: 'compliance-report', label: 'Compliance Report', path: '/compliance-report', icon: <ShieldCheckIcon color="white" /> },
+      { id: 'compliance-report', label: 'Report', path: '/compliance-report', icon: <ShieldCheckIcon color="white" /> },
       { id: 'review-rulings', label: 'Review rulings', path: '/review-rulings', icon: <FileCheckIcon color="white" /> },
     ],
   },

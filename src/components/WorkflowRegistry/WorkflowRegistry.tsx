@@ -1,251 +1,185 @@
-import { useState } from "react";
 import { motion } from "motion/react";
 import "./WorkflowRegistry.css";
 import {
   platformMetrics,
-  workflows,
-  workflowDetails,
+  runningRightNow,
+  workspaceCards,
   type Domain,
-  type WorkflowId,
-  type WorkflowStatus,
+  type WorkspaceId,
 } from "../../data/story";
 import { useNavigate } from "react-router-dom";
-import { pressableButton, pressableIconButton } from "../../motion/interactions";
+import { pressableButton } from "../../motion/interactions";
 
-const ASSET = "/assets/workflows-registry";
-const SHARED_ASSET = "/assets/workflows-page";
+const PAGE = "/assets/workflows-page";
 
 const domainIcon: Record<Domain, string> = {
-  "Revenue Cycle": `${SHARED_ASSET}/money-wavy-fill.svg`,
-  Compliance: `${SHARED_ASSET}/clipboard-text-fill.svg`,
-  Clinical: `${SHARED_ASSET}/hand-heart-fill.svg`,
+  "Revenue Cycle": `${PAGE}/money-wavy-fill.svg`,
+  Compliance: `${PAGE}/clipboard-text-fill.svg`,
+  Clinical: `${PAGE}/hand-heart-fill.svg`,
+};
+
+const domainLogoIcon: Record<Domain, string> = {
+  "Revenue Cycle": `${PAGE}/rcm-logo.svg`,
+  Compliance: `${PAGE}/compliance-logo.svg`,
+  Clinical: `${PAGE}/clinical-logo.svg`,
 };
 
 const domainLabelColor: Record<Domain, string> = {
-  "Revenue Cycle": "var(--color-deeppurple-900)",
+  "Revenue Cycle": "var(--color-deeppurple-800)",
   Compliance: "var(--color-cyan-900)",
   Clinical: "var(--color-blue-900)",
 };
 
-const statusMeta: Record<WorkflowStatus, { icon: string; label: string }> = {
-  Active: {
-    icon: `${ASSET}/broadcast-fill.svg`,
-    label: "Active",
-  },
-  "Needs Attention": {
-    icon: `${ASSET}/warning-circle-fill.svg`,
-    label: "Needs attention",
-  },
-  Testing: {
-    icon: `${ASSET}/flask-fill.svg`,
-    label: "Testing",
-  },
-  Draft: {
-    icon: `${ASSET}/file-text-fill.svg`,
-    label: "Draft",
-  },
-  Paused: {
-    icon: `${ASSET}/pause-circle-fill.svg`,
-    label: "Paused",
-  },
+const workspaceGradient: Record<WorkspaceId, string> = {
+  "revenue-cycle": "linear-gradient(to bottom, var(--color-deeppurple-50, #ede7f6), #ffffff)",
+  compliance: "linear-gradient(to bottom, var(--color-cyan-50, #e0f7fa), #ffffff)",
+  clinical: "linear-gradient(to bottom, #e3f2fd, #ffffff)",
 };
 
-const dimCaptionStatuses: WorkflowStatus[] = ["Draft", "Paused"];
+const workspaceDomain: Record<WorkspaceId, Domain> = {
+  "revenue-cycle": "Revenue Cycle",
+  compliance: "Compliance",
+  clinical: "Clinical",
+};
 
-const registryTabs = ["All", "Needs Attention", "Active", "Testing", "Draft", "Paused"];
+function stripBold(line: string) {
+  return line.replace(/\*\*([^*]+)\*\*/g, "$1");
+}
 
 export default function WorkflowRegistry() {
   const navigate = useNavigate();
-  const [selectedId, setSelectedId] = useState<WorkflowId>(workflows[0].id);
-  const detail = workflowDetails[selectedId];
 
   return (
     <div className="workflow-registry">
       <div className="wr-column">
-        <header className="wr-header">
-          <h1 className="wr-header__title">Workflows Registry</h1>
-          <div className="wr-header__actions">
-            <motion.button
-              className="wr-btn-outline"
-              type="button"
-              onClick={() => navigate("/workflows/new")}
-              {...pressableButton}
-            >
-              Create a workflow
-            </motion.button>
-            <motion.button
-              className="wr-icon-button"
-              type="button"
-              aria-label="More options"
-              {...pressableIconButton}
-            >
-              <img src={`${ASSET}/dots-three-outline-vertical-fill.svg`} alt="" />
-            </motion.button>
-          </div>
-        </header>
 
-        <div className="wr-stats-grid">
-          {platformMetrics.map((metric) => (
-            <div className="wr-stat-card" key={metric.label}>
-              <span className="wr-stat-card__label">{metric.label}</span>
-              <div>
-                <div className="wr-stat-card__value">{metric.value}</div>
-                <div className="wr-stat-card__caption">{metric.caption}</div>
-              </div>
+        {/* ── Hero card ──────────────────────────────────────────────── */}
+        <div className="wr-hero">
+          <div className="wr-hero__body">
+            <div className="wr-hero__text">
+              <p className="wr-hero__headline">Understand the work, Run the work, Improve the work.</p>
+              <p className="wr-hero__sub">One agentic platform turns fragmented signals into managed work</p>
             </div>
-          ))}
+            <div className="wr-hero__actions">
+              <motion.button
+                className="wr-hero__cta"
+                type="button"
+                onClick={() => navigate("/workflows/new")}
+                {...pressableButton}
+              >
+                Create a workflow
+              </motion.button>
+              <button className="wr-hero__link" type="button" onClick={() => navigate("/workflows/running")}>
+                See what's running
+              </button>
+            </div>
+          </div>
+          <img
+            className="wr-hero__illustration"
+            src={`${PAGE}/workflows-banner-illustration.svg`}
+            alt=""
+          />
         </div>
 
-        <div className="wr-content-row">
-          <div className="wr-list">
-            <div className="wr-tabs">
-              {registryTabs.map((tab) => (
-                <div className={`wr-tab${tab === "All" ? " wr-tab--active" : ""}`} key={tab}>
-                  <span>{tab}</span>
+        {/* ── Running right now ──────────────────────────────────────── */}
+        <section className="wr-section">
+          <header className="wr-section__header">
+            <img src={`${PAGE}/active-icon.svg`} alt="" className="wr-section__icon" />
+            <h2 className="wr-section__title">Running right now</h2>
+          </header>
+          <div className="wr-ticker">
+            {runningRightNow.map((item, i) => (
+              <div className="wr-ticker__row" key={i}>
+                <div className="wr-ticker__domain">
+                  <img src={domainLogoIcon[item.domain]} alt="" className="wr-ticker__domain-logo" />
+                  <img src={`${PAGE}/line-divider.svg`} alt="" className="wr-ticker__divider" />
+                  <span className="wr-ticker__domain-label" style={{ color: domainLabelColor[item.domain] }}>
+                    {item.domain}
+                  </span>
+                  <img src={`${PAGE}/line-divider.svg`} alt="" className="wr-ticker__divider" />
                 </div>
-              ))}
+                <p className="wr-ticker__line">{stripBold(item.line)}</p>
+                <div className="wr-ticker__owner">
+                  <span className="wr-ticker__owner-name">{item.owner}</span>
+                  <img
+                    src={`${PAGE}/owner-icon.svg`}
+                    alt=""
+                    className="wr-ticker__owner-icon"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Workflows in Numbers ───────────────────────────────────── */}
+        <section className="wr-section">
+          <header className="wr-section__header wr-section__header--between">
+            <h2 className="wr-section__title">Workflows in Numbers</h2>
+            <div className="wr-cowork-link">
+              <span>Ask why these numbers moved</span>
+              <img src={`${PAGE}/co-work-icon.svg`} alt="" />
             </div>
-            <div className="wr-rows">
-              {workflows.map((wf) => {
-                const meta = statusMeta[wf.status];
-                const selected = wf.id === selectedId;
-                return (
-                  <div
-                    className={`wr-row${selected ? " wr-row--selected" : ""}`}
-                    key={wf.id}
-                    onClick={() => setSelectedId(wf.id)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <div className="wr-row__identity">
-                      <img className="wr-row__domain-icon" src={domainIcon[wf.domain]} alt="" />
-                      <div className="wr-row__identity-text">
-                        <span className="wr-row__name">{wf.name}</span>
-                        <span className="wr-row__meta" style={{ color: domainLabelColor[wf.domain] }}>
-                          {wf.domain} · {wf.orgUnit}
+          </header>
+          <div className="wr-stats-grid">
+            {platformMetrics.map((metric) => (
+              <div className="wr-stat-card" key={metric.label}>
+                <span className="wr-stat-card__label">{metric.label}</span>
+                <div>
+                  <div className="wr-stat-card__value">{metric.value}</div>
+                  <div className="wr-stat-card__caption">{metric.caption}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Workspaces ────────────────────────────────────────────── */}
+        <section className="wr-section">
+          <header className="wr-section__header wr-section__header--between">
+            <div>
+              <h2 className="wr-section__title">Workspaces</h2>
+              <p className="wr-section__subtitle">One platform, shaped around each team's work</p>
+            </div>
+            <div className="wr-cowork-link">
+              <span>Ask for an organizational brief</span>
+              <img src={`${PAGE}/co-work-icon.svg`} alt="" />
+            </div>
+          </header>
+          <div className="wr-workspaces">
+            {workspaceCards.map((ws) => {
+              const domain = workspaceDomain[ws.id];
+              return (
+                <div
+                  className="wr-workspace-card"
+                  key={ws.id}
+                  style={{ background: workspaceGradient[ws.id] }}
+                >
+                  <div className="wr-workspace-card__body">
+                    <div className="wr-workspace-card__info">
+                      <div className="wr-workspace-card__identity">
+                        <img src={domainIcon[domain]} alt="" className="wr-workspace-card__icon" />
+                        <span className="wr-workspace-card__domain" style={{ color: domainLabelColor[domain] }}>
+                          {ws.title}
                         </span>
                       </div>
-                      <img className="wr-row__divider" src={`${SHARED_ASSET}/line-divider.svg`} alt="" />
+                      <p className="wr-workspace-card__purpose">{ws.purposeLine}</p>
+                      <p className="wr-workspace-card__count">{ws.activeWorkflowsLabel}</p>
                     </div>
-                    <div className="wr-row__status">
-                      <span className="wr-status-badge">
-                        <img src={meta.icon} alt="" />
-                        <span>{meta.label}</span>
-                      </span>
-                    </div>
-                    <div className="wr-row__caption">
-                      <span
-                        className={
-                          dimCaptionStatuses.includes(wf.status)
-                            ? "wr-row__caption-text wr-row__caption-text--dim"
-                            : "wr-row__caption-text"
-                        }
-                      >
-                        {wf.caption}
-                      </span>
-                    </div>
-                    <img className="wr-row__chevron" src={`${ASSET}/right-chevron.svg`} alt="" />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="wr-detail-shadow">
-          <div className="wr-detail">
-            <div className="wr-detail__bg" aria-hidden="true" />
-            <div className="wr-detail__head">
-              <div className="wr-detail__domain">
-                <img src={domainIcon[detail.domainChip]} alt="" />
-                <span style={{ color: domainLabelColor[detail.domainChip] }}>
-                  {detail.domainChip}
-                </span>
-              </div>
-              <div className="wr-detail__head-actions">
-                <span className="wr-detail__status-badge">
-                  <img src={`${ASSET}/broadcast-fill-teal.svg`} alt="" />
-                  <span>{detail.status}</span>
-                </span>
-                <motion.button
-                  className="wr-icon-button wr-icon-button--sm"
-                  type="button"
-                  aria-label="More options"
-                  {...pressableIconButton}
-                >
-                  <img src={`${ASSET}/dots-three-outline-vertical-fill.svg`} alt="" />
-                </motion.button>
-              </div>
-            </div>
-
-            <div className="wr-detail__title-block">
-              <h2>{detail.name}</h2>
-              <p>{detail.purpose}</p>
-            </div>
-
-            <div className="wr-detail__impact">
-              <div className="wr-detail__impact-text">
-                <span className="wr-detail__impact-label">Measured impact</span>
-                <span className="wr-detail__impact-value">
-                  {detail.measuredImpact.value}
-                </span>
-              </div>
-              <img src={`${ASSET}/medal-fill.svg`} alt="" />
-            </div>
-
-            <div className="wr-detail__field">
-              <span className="wr-detail__field-label">Trigger</span>
-              <span className="wr-detail__field-value">{detail.trigger}</span>
-            </div>
-
-            <div className="wr-detail__field">
-              <span className="wr-detail__field-label">Context</span>
-              <div className="wr-detail__chips">
-                {detail.contextChips.map((chip) => (
-                  <span className="wr-detail__chip" key={chip}>
-                    {chip}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="wr-detail__field">
-              <span className="wr-detail__field-label">Agent work</span>
-              <ol className="wr-detail__agent-work">
-                {detail.agentWork.map((step, index) => (
-                  <li key={step}>
-                    <span>{index + 1}.</span> {step}
-                  </li>
-                ))}
-              </ol>
-            </div>
-
-            <div className="wr-detail__field">
-              <span className="wr-detail__field-label">Actions</span>
-              <div className="wr-detail__actions">
-                {detail.actions.map((action, index) => (
-                  <div className="wr-detail__action" key={action.label}>
-                    {index > 0 && (
-                      <img
-                        className="wr-detail__action-connector"
-                        src={`${ASSET}/action-connector-line.svg`}
-                        alt=""
-                      />
-                    )}
-                    <div className="wr-detail__action-row">
-                      <img src={`${ASSET}/ellipse-dot.svg`} alt="" />
-                      <span>
-                        {action.label}
-                        {action.conditional && <em> — {action.conditional}</em>}
-                      </span>
+                    <div className="wr-workspace-card__arrow">
+                      <img src={`${PAGE}/arrow-up-right.svg`} alt="" />
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className="wr-workspace-card__metric">
+                    <span className="wr-workspace-card__metric-value">{ws.signatureMetricValue}</span>
+                    <span className="wr-workspace-card__metric-label">{ws.signatureMetricLabel}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
 
-            <div className="wr-detail__fade" aria-hidden="true" />
-          </div>
-          </div>
-        </div>
       </div>
     </div>
   );

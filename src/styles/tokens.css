@@ -26,6 +26,7 @@
   /* Borders */
   --color-border-outlined: rgba(0, 0, 0, 0.23);
   --color-border-divider: rgba(0, 0, 0, 0.12);
+  --color-divider: rgba(0, 0, 0, 0.12);
 
   /* Status */
   --color-success: #2e7d32;
@@ -73,6 +74,7 @@
 
   /* Shadows */
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
 
   /* Layout */
   --sidebar-width: 255px;

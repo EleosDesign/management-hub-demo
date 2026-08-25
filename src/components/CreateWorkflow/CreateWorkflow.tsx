@@ -15,6 +15,7 @@ import {
   type ReceiptDetailRow,
   type ScriptTurn,
 } from "../../data/story";
+import { useNavigate } from "react-router-dom";
 import { ArrowUpRightIcon } from "../PlatformHome/ArrowUpRightIcon";
 import { pressableButton, pressableCard, pressableIconButton } from "../../motion/interactions";
 
@@ -50,7 +51,7 @@ const receiptIcon: Record<ReceiptDetailRow["icon"], string> = {
   owner: `${ASSET}/owner-fill.svg`,
 };
 
-type ReceiptSectionName = "Intent" | "Scope" | "Logic";
+type ReceiptSectionName = "Intent" | "Scope" | "Logic" | "Validation" | "Commitment";
 
 const THINKING_DURATION_MS = 3000;
 const WORD_STAGGER_S = 0.06;
@@ -95,8 +96,8 @@ const messageVariants = {
   },
 };
 
-function isGateTurn(turn: ScriptTurn): turn is ScriptTurn & { kind: "confirm" | "question" } {
-  return turn.kind === "confirm" || turn.kind === "question";
+function isGateTurn(turn: ScriptTurn) {
+  return turn.kind === "confirm" || turn.kind === "question" || turn.kind === "validation-results";
 }
 
 /** How long AnimatedText takes to finish revealing a given string, in seconds. */
@@ -182,6 +183,7 @@ export default function CreateWorkflow() {
     text: string;
   } | null>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
   const pendingTimeoutsRef = useRef<number[]>([]);
   const lastConfirmTurnIndexRef = useRef<number | null>(null);
   const presetRevealTimeoutRef = useRef<number | null>(null);
@@ -319,8 +321,10 @@ export default function CreateWorkflow() {
     [mountedCount],
   );
 
-  const isSectionSet = (section: ReceiptSectionName) =>
-    answeredCount >= (sectionGateOrder[section] ?? Infinity);
+  const isSectionSet = (section: ReceiptSectionName) => {
+    if (section === "Validation") return answeredCount >= (sectionGateOrder["Commitment"] ?? Infinity);
+    return answeredCount >= (sectionGateOrder[section] ?? Infinity);
+  };
 
   function handleSubmit() {
     const trimmed = input.trim();
@@ -396,48 +400,58 @@ export default function CreateWorkflow() {
           <AnimatedText text={turn.text} className="cw-ai-line" />
         )}
 
-        {turn.kind === "confirm" && (
-          <div className="cw-confirm">
-            <AnimatedText text={turn.text} className="cw-ai-line" />
-            <RevealAfterText text={turn.text}>
-              <div className="cw-chip-row">
-                <AnimatePresence mode="popLayout" initial={false}>
-                  {turn.options
-                    .map((option, optionIndex) => ({ option, optionIndex }))
-                    .filter(
-                      ({ optionIndex }) =>
-                        selected === undefined || optionIndex === selected,
-                    )
-                    .map(({ option, optionIndex }) => (
-                      <motion.button
-                        key={option.label}
-                        type="button"
-                        layout
-                        exit={{ opacity: 0 }}
-                        transition={{
-                          layout: {
-                            duration: chipTransition.layout.duration,
-                            delay: chipTransition.layout.delay,
-                            ease: chipTransition.layout.ease as Easing,
-                          },
-                          opacity: { duration: chipTransition.fade.duration, ease: "easeOut" },
-                        }}
-                        className={
-                          "cw-chip" +
-                          (selected === optionIndex ? " cw-chip--selected" : "")
-                        }
-                        disabled={!isPending}
-                        onClick={() => handleAnswer(index, optionIndex)}
-                      >
-                        <span className="cw-chip__number">{optionIndex + 1}</span>
-                        <span>{option.label}</span>
-                      </motion.button>
-                    ))}
-                </AnimatePresence>
-              </div>
-            </RevealAfterText>
-          </div>
-        )}
+        {turn.kind === "confirm" && (() => {
+          const lastQ = turn.text.lastIndexOf(". ", turn.text.length - 2);
+          const bodyText = lastQ !== -1 ? turn.text.slice(0, lastQ + 1) : turn.text;
+          const questionText = lastQ !== -1 ? turn.text.slice(lastQ + 2) : "";
+          return (
+            <div className="cw-confirm">
+              <AnimatedText text={bodyText} className="cw-ai-line" />
+              {questionText && (
+                <RevealAfterText text={bodyText}>
+                  <p className="cw-confirm__question">{questionText}</p>
+                </RevealAfterText>
+              )}
+              <RevealAfterText text={turn.text}>
+                <div className="cw-chip-row">
+                  <AnimatePresence mode="popLayout" initial={false}>
+                    {turn.options
+                      .map((option, optionIndex) => ({ option, optionIndex }))
+                      .filter(
+                        ({ optionIndex }) =>
+                          selected === undefined || optionIndex === selected,
+                      )
+                      .map(({ option, optionIndex }) => (
+                        <motion.button
+                          key={option.label}
+                          type="button"
+                          layout
+                          exit={{ opacity: 0 }}
+                          transition={{
+                            layout: {
+                              duration: chipTransition.layout.duration,
+                              delay: chipTransition.layout.delay,
+                              ease: chipTransition.layout.ease as Easing,
+                            },
+                            opacity: { duration: chipTransition.fade.duration, ease: "easeOut" },
+                          }}
+                          className={
+                            "cw-chip" +
+                            (selected === optionIndex ? " cw-chip--primary cw-chip--selected" : "")
+                          }
+                          disabled={!isPending}
+                          onClick={() => handleAnswer(index, optionIndex)}
+                        >
+                          <span className="cw-chip__number">{optionIndex + 1}</span>
+                          <span>{option.label}</span>
+                        </motion.button>
+                      ))}
+                  </AnimatePresence>
+                </div>
+              </RevealAfterText>
+            </div>
+          );
+        })()}
 
         {turn.kind === "question" && (
           <div className="cw-question">
@@ -505,7 +519,7 @@ export default function CreateWorkflow() {
                 <span>{turn.expectedEvidenceRequests}</span>
               </div>
             </div>
-            <motion.button type="button" className="cw-validation-card__cta" {...pressableButton}>
+            <motion.button type="button" className="cw-validation-card__cta" onClick={() => handleAnswer(index, 0)} {...pressableButton}>
               {turn.sampleCasesLabel}
             </motion.button>
           </div>
@@ -535,15 +549,9 @@ export default function CreateWorkflow() {
           />
           {!isLast && <span className="cw-receipt-section__line" />}
         </div>
-        <div className="cw-receipt-section__body">
+        <div className={"cw-receipt-section__body" + (!isSet ? " cw-receipt-section__body--pending" : "")}>
           <div className="cw-receipt-section__head">
             <span className="cw-receipt-section__title">{title}</span>
-            {isSet && (
-              <span className="cw-receipt-badge">
-                Set
-                <img src={`${ASSET}/check.svg`} alt="" />
-              </span>
-            )}
           </div>
           {content}
         </div>
@@ -551,12 +559,14 @@ export default function CreateWorkflow() {
     );
   }
 
-  function renderReceiptRow(row: ReceiptDetailRow) {
+  function renderReceiptRow(row: ReceiptDetailRow, showIcon = true) {
     return (
       <div className="cw-receipt-row" key={row.label}>
-        <div className="cw-receipt-row__icon">
-          <img src={receiptIcon[row.icon]} alt="" />
-        </div>
+        {showIcon && (
+          <div className="cw-receipt-row__icon">
+            <img src={receiptIcon[row.icon]} alt="" />
+          </div>
+        )}
         <div className="cw-receipt-row__text">
           <span className="cw-receipt-row__label">{row.label}</span>
           <span className="cw-receipt-row__value">{row.value}</span>
@@ -568,17 +578,28 @@ export default function CreateWorkflow() {
   const { receipt } = createWorkflowScript;
   const scopeSet = isSectionSet("Scope");
   const logicSet = isSectionSet("Logic");
+  const validationSet = isSectionSet("Validation");
 
   return (
     <div className="create-workflow">
       <div className="cw-column">
         <div className="cw-card">
+          <button className="cw-back-btn" type="button" onClick={() => navigate("/workflows")}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Workflows
+          </button>
           <h1 className="cw-title">Create a Workflow</h1>
 
           {submittedMessage === null ? (
             <div className="cw-empty">
               <div className="cw-prompt-box">
-                <p className="cw-prompt-box__headline">
+                <p
+                  className="cw-prompt-box__headline"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => revealPresetInput("Identify clients with fewer than three authorized units. Check whether recent documentation supports continued care. Create an RCM task, and notify the clinician when required evidence is missing")}
+                >
                   {createWorkflowEmptyState.headline}
                 </p>
                 <div className="cw-prompt-box__input">
@@ -724,6 +745,7 @@ export default function CreateWorkflow() {
                   padding: `${flowColumnsStyle.receipt.paddingY}px ${flowColumnsStyle.receipt.paddingRight}px ${flowColumnsStyle.receipt.paddingY}px ${flowColumnsStyle.receipt.paddingLeft}px`,
                 }}
               >
+                <p className="cw-receipt__label">Progress</p>
                 <motion.div
                   className="cw-receipt__content"
                   initial="hidden"
@@ -740,7 +762,7 @@ export default function CreateWorkflow() {
                     isSet: scopeSet,
                     content: scopeSet ? (
                       <div className="cw-receipt__rows">
-                        {receipt.scope.map(renderReceiptRow)}
+                        {receipt.scope.map((row) => renderReceiptRow(row))}
                       </div>
                     ) : (
                       <p className="cw-receipt__pending">
@@ -753,7 +775,7 @@ export default function CreateWorkflow() {
                     isSet: logicSet,
                     content: logicSet ? (
                       <div className="cw-receipt__rows">
-                        {receipt.logic.map(renderReceiptRow)}
+                        {receipt.logic.map((row) => renderReceiptRow(row))}
                       </div>
                     ) : (
                       <p className="cw-receipt__pending">
@@ -763,8 +785,12 @@ export default function CreateWorkflow() {
                   })}
                   {renderReceiptSection({
                     title: "Validation",
-                    isSet: false,
-                    content: (
+                    isSet: validationSet,
+                    content: validationSet ? (
+                      <div className="cw-receipt__rows">
+                        {receipt.validation.map((row) => renderReceiptRow(row, false))}
+                      </div>
+                    ) : (
                       <p className="cw-receipt__pending">
                         {receipt.validationPending}
                       </p>
@@ -772,10 +798,10 @@ export default function CreateWorkflow() {
                   })}
                   {renderReceiptSection({
                     title: "Commitment",
-                    isSet: false,
+                    isSet: isSectionSet("Commitment"),
                     isLast: true,
                     content: (
-                      <p className="cw-receipt__pending">
+                      <p className={isSectionSet("Commitment") ? "cw-receipt__text" : "cw-receipt__pending"}>
                         {receipt.commitmentPending}
                       </p>
                     ),

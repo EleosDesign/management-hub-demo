@@ -575,7 +575,7 @@ export interface ConfirmTurn extends BaseScriptTurn {
   kind: "confirm";
   text: string;
   options: [QuickReplyOption, QuickReplyOption];
-  completesSection: "Intent" | "Scope";
+  completesSection: "Intent" | "Scope" | "Validation" | "Commitment";
 }
 
 /** A plain AI line with no reply required — renders immediately. */
@@ -599,6 +599,7 @@ export interface QuestionTurn extends BaseScriptTurn {
 /** The dry-run backtest results card — terminal turn of this scripted flow. */
 export interface ValidationResultsTurn extends BaseScriptTurn {
   kind: "validation-results";
+  completesSection?: "Validation";
   scanned: string;
   matches: string;
   confidenceSplit: string;
@@ -625,6 +626,7 @@ export interface WorkflowReceipt {
   logicPendingLabel: string;
   logic: ReceiptDetailRow[];
   validationPending: string;
+  validation: ReceiptDetailRow[];
   commitmentPending: string;
 }
 
@@ -652,7 +654,7 @@ export const createWorkflowScript: CreateWorkflowScript = {
       kind: "confirm",
       completesSection: "Intent",
       thinkingLabel: "Reading your request",
-      text: "Got it — watch for clients under three authorized units, check whether their notes justify continuing care, open an RCM case, and loop in the clinician if that evidence isn't there yet. Sound right?",
+      text: "Got it — watch for clients under three authorized units, check whether their notes justify continuing care, open an RCM case, and loop in the clinician if that evidence isn't there yet. Does that look right?",
       options: [{ label: "Yes, that's it." }, { label: "Not Quite" }],
     },
     {
@@ -729,6 +731,21 @@ export const createWorkflowScript: CreateWorkflowScript = {
       expectedEvidenceRequests: "11",
       sampleCasesLabel: "See 3 sample cases",
     },
+    {
+      kind: "confirm",
+      thinkingLabel: "Pulling sample cases",
+      text: "3 sample cases: Maria Chen (2 units, no note), James Okafor (1 unit, note 22d old), Sofia Reyes (auth expires next week). All three would have fired. Ready to go live?",
+      options: [
+        { label: "Yes, go live" },
+        { label: "Not yet" },
+      ],
+      completesSection: "Commitment",
+    },
+    {
+      kind: "statement",
+      thinkingLabel: "Activating workflow",
+      text: "You're live. The workflow will run daily and on every service completion — I'll flag any missing evidence directly on the clinician's note.",
+    },
   ],
   receipt: {
     intent:
@@ -757,7 +774,12 @@ export const createWorkflowScript: CreateWorkflowScript = {
       { icon: "owner", label: "Owner", value: "caseload routing" },
     ],
     validationPending: "test against the last 30 days",
-    commitmentPending: "where to run, when to start",
+    validation: [
+      { icon: "population" as const, label: "Scanned", value: "1,900 services" },
+      { icon: "evidence" as const, label: "Matches", value: "41 cases (33 high-confidence)" },
+      { icon: "caseTiming" as const, label: "Sample cases", value: "Maria Chen, James Okafor, Sofia Reyes" },
+    ],
+    commitmentPending: "runs daily and on every service completion",
   },
 };
 

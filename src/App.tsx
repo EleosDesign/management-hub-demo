@@ -13,6 +13,7 @@ import './App.css';
 const WorkflowRegistry = lazy(() => import('./components/WorkflowRegistry/WorkflowRegistry'));
 const CreateWorkflow = lazy(() => import('./components/CreateWorkflow/CreateWorkflow'));
 const Workspaces = lazy(() => import('./components/Workspaces/Workspaces'));
+const RunningWorkflows = lazy(() => import('./components/RunningWorkflows/RunningWorkflows'));
 
 function AppContent() {
   const location = useLocation();
@@ -32,6 +33,7 @@ function AppContent() {
           <Route path="/ccbhc-tracker" element={<CCBHCTracker />} />
           <Route path="/workflows" element={<WorkflowRegistry />} />
           <Route path="/workflows/new" element={<CreateWorkflow />} />
+          <Route path="/workflows/running" element={<RunningWorkflows />} />
         </Routes>
       </Suspense>
     </div>
