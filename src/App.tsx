@@ -28,7 +28,7 @@ function AppContent() {
           <Route path="/sites" element={<SitesPage />} />
           <Route path="/leadership-report" element={<LeadershipReport />} />
           <Route path="/compliance-report" element={<ComplianceReport />} />
-          <Route path="/review-rulings" element={<Workspaces workspaceId="compliance" />} />
+          <Route path="/review-rulings" element={<RunningWorkflows />} />
           <Route path="/eligibility-report" element={<EligibilityReport />} />
           <Route path="/ccbhc-tracker" element={<CCBHCTracker />} />
           <Route path="/workflows" element={<WorkflowRegistry />} />
