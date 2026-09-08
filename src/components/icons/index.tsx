@@ -158,6 +158,36 @@ export function ActivityIcon({ size = 16, color = 'currentColor', className }: I
   );
 }
 
+export function GripVerticalIcon({ size = 16, color = 'currentColor', className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <circle cx="5.5" cy="4" r="1" fill={color}/>
+      <circle cx="5.5" cy="8" r="1" fill={color}/>
+      <circle cx="5.5" cy="12" r="1" fill={color}/>
+      <circle cx="10.5" cy="4" r="1" fill={color}/>
+      <circle cx="10.5" cy="8" r="1" fill={color}/>
+      <circle cx="10.5" cy="12" r="1" fill={color}/>
+    </svg>
+  );
+}
+
+export function TrashIcon({ size = 16, color = 'currentColor', className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <path d="M2 4h12M5.333 4V2.667h5.334V4M6.667 7.333v4M9.333 7.333v4M3.333 4l.667 9.333h8L12.667 4" stroke={color} strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+export function NoteIcon({ size = 16, color = 'currentColor', className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <rect x="2.75" y="1.75" width="10.5" height="12.5" rx="1.25" stroke={color} strokeWidth="1.5"/>
+      <path d="M5 5.5h6M5 8h6M5 10.5h3.5" stroke={color} strokeWidth="1.25" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 export function TargetIcon({ size = 16, color = 'currentColor', className }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>

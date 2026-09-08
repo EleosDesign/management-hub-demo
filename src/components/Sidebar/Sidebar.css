@@ -177,8 +177,14 @@
 .sidebar__sub-item--active .sidebar__sub-item__icon svg circle,
 .sidebar__sub-item--active:hover .sidebar__sub-item__icon svg path,
 .sidebar__sub-item--active:hover .sidebar__sub-item__icon svg circle {
-  fill: var(--color-primary-dark);
-  stroke: none;
+  stroke: var(--color-primary-dark);
+  fill: none;
+}
+
+.sidebar__sub-item--active .sidebar__sub-item__icon svg rect,
+.sidebar__sub-item--active:hover .sidebar__sub-item__icon svg rect {
+  stroke: var(--color-primary-dark);
+  fill: none;
 }
 
 .sidebar__sub-item--active:hover {
@@ -274,8 +280,14 @@
 .sidebar--collapsed .sidebar__sub-item--active .sidebar__sub-item__icon svg circle,
 .sidebar--collapsed .sidebar__sub-item:hover .sidebar__sub-item__icon svg path,
 .sidebar--collapsed .sidebar__sub-item:hover .sidebar__sub-item__icon svg circle {
-  fill: var(--color-primary-dark);
-  stroke: none;
+  stroke: var(--color-primary-dark);
+  fill: none;
+}
+
+.sidebar--collapsed .sidebar__sub-item--active .sidebar__sub-item__icon svg rect,
+.sidebar--collapsed .sidebar__sub-item:hover .sidebar__sub-item__icon svg rect {
+  stroke: var(--color-primary-dark);
+  fill: none;
 }
 
 .sidebar--collapsed .sidebar__nav {
