@@ -161,7 +161,7 @@ const CLINICIANS: ClinicianRecord[] = [
     caseload: 32, triggeredCount: 27, atRiskCount: 3,
     notTriggered: [
       {
-        id: 'CL-10001', initials: 'MR', name: 'Marcus Rivera', medicaidStatus: 'At Risk',
+        id: 'CL-10001', initials: 'MR', name: 'Marcus Reed', medicaidStatus: 'At Risk',
         treatmentPlanEnd: 'Apr 1, 2027', lastServiceDate: 'Sep 22, 2026',
         daysRemaining: 6, riskReason: 'Address change flagged — Medicaid record must be updated',
         status: 'not-triggered', action: 'Check PA status',
@@ -189,7 +189,7 @@ const CLINICIANS: ClinicianRecord[] = [
         workflowStatus: 'Wants help',
       },
       {
-        id: 'CL-11042', initials: 'TC', name: 'Tina Chen', medicaidStatus: 'At Risk',
+        id: 'CL-11042', initials: 'TC', name: 'Thomas Clark', medicaidStatus: 'At Risk',
         treatmentPlanEnd: 'Nov 7, 2026', lastServiceDate: 'Sep 3, 2026',
         daysRemaining: 6, riskReason: 'Address change — payer reassignment pending, PA not yet approved',
         status: 'not-triggered', action: 'Check PA status',
@@ -204,10 +204,10 @@ const CLINICIANS: ClinicianRecord[] = [
       },
     ],
     triggered: [
-      { id: 'CL-10102', initials: 'KP', name: 'Karen Park',    medicaidStatus: 'Active', treatmentPlanEnd: 'Dec 5, 2026',  lastServiceDate: 'Sep 22, 2026', daysRemaining: 0, riskReason: 'Income change reported — eligibility redetermination completed', status: 'triggered', triggeredDate: 'Sep 22', workflowStatus: 'Closed' },
-      { id: 'CL-10145', initials: 'RM', name: 'Rosa Martinez', medicaidStatus: 'Active', treatmentPlanEnd: 'Nov 18, 2026', lastServiceDate: 'Sep 20, 2026', daysRemaining: 0, riskReason: 'Separation reported — household size change, eligibility impact pending', status: 'triggered', triggeredDate: 'Sep 20' },
-      { id: 'CL-10203', initials: 'GH', name: 'George Harris', medicaidStatus: 'Active', treatmentPlanEnd: 'Feb 1, 2027',  lastServiceDate: 'Sep 19, 2026', daysRemaining: 0, riskReason: 'Address change resolved — Medicaid record updated, redetermination mail rerouted', status: 'triggered', triggeredDate: 'Sep 19', workflowStatus: 'Closed' },
-      { id: 'CL-10311', initials: 'NF', name: 'Nina Foster',   medicaidStatus: 'Active', treatmentPlanEnd: 'Oct 30, 2026', lastServiceDate: 'Sep 17, 2026', daysRemaining: 0, riskReason: 'Household size change — benefits reviewed and updated', status: 'triggered', triggeredDate: 'Sep 17', workflowStatus: 'Closed' },
+      { id: 'CL-10102', initials: 'KP', name: 'Karen Price',    medicaidStatus: 'Active', treatmentPlanEnd: 'Dec 5, 2026',  lastServiceDate: 'Sep 22, 2026', daysRemaining: 0, riskReason: 'Income change reported — eligibility redetermination completed', status: 'triggered', triggeredDate: 'Sep 22', workflowStatus: 'Closed' },
+      { id: 'CL-10145', initials: 'RM', name: 'Rachel Moore', medicaidStatus: 'Active', treatmentPlanEnd: 'Nov 18, 2026', lastServiceDate: 'Sep 20, 2026', daysRemaining: 0, riskReason: 'Separation reported — household size change, eligibility impact pending', status: 'triggered', triggeredDate: 'Sep 20' },
+      { id: 'CL-10203', initials: 'GH', name: 'Grace Hill', medicaidStatus: 'Active', treatmentPlanEnd: 'Feb 1, 2027',  lastServiceDate: 'Sep 19, 2026', daysRemaining: 0, riskReason: 'Address change resolved — Medicaid record updated, redetermination mail rerouted', status: 'triggered', triggeredDate: 'Sep 19', workflowStatus: 'Closed' },
+      { id: 'CL-10311', initials: 'NF', name: 'Nathan Ford',   medicaidStatus: 'Active', treatmentPlanEnd: 'Oct 30, 2026', lastServiceDate: 'Sep 17, 2026', daysRemaining: 0, riskReason: 'Household size change — benefits reviewed and updated', status: 'triggered', triggeredDate: 'Sep 17', workflowStatus: 'Closed' },
       { id: 'CL-10402', initials: 'DW', name: 'David Walsh',   medicaidStatus: 'Active', treatmentPlanEnd: 'Dec 14, 2026', lastServiceDate: 'Sep 15, 2026', daysRemaining: 0, riskReason: 'Employer coverage loss — Medicaid enrollment confirmed', status: 'triggered', triggeredDate: 'Sep 15', workflowStatus: 'Closed' },
     ],
   },
