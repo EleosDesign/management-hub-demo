@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect, useRef, Fragment } from 'react';
 import './WorkflowsVisibility.css';
 
 const TODAY = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -2557,6 +2557,7 @@ function PAAppealDetail({ clientId, clinicianName, onBack }: { clientId: string;
 function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState, onStateChange, onStatusChange }: { clientId: string; clinicianName: string; onBack: () => void; persistedState?: ScheduleServiceState; onStateChange?: (s: ScheduleServiceState) => void; onStatusChange?: (id: string, status: string) => void }) {
   const [selectedSlot, setSelectedSlot] = useState(0);
   const [showMore, setShowMore] = useState(false);
+  const outcomeRef = useRef<HTMLDivElement>(null);
   const [done, setDone] = useState(persistedState?.done ?? false);
   const [selectedAction, setSelectedAction] = useState<'office' | 'phone' | 'no-answer' | null>(persistedState?.selectedAction ?? null);
   const [note, setNote] = useState(persistedState?.note ?? '');
@@ -3014,7 +3015,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                               </div>
                       )}
 
-                      {!!phaseAction && <>
+                      {(!!phaseAction || !!workflowOutcome) && <>
 
                       {/* Retry reminder — contact phase, no-answer actions */}
                       {isNoAnswerAction && (
@@ -3051,7 +3052,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                             ) : <>
 
                             {/* Outcome */}
-                            {!isSchedulingAction && <div style={{ marginBottom: 12 }}>
+                            {!isSchedulingAction && <div ref={outcomeRef} style={{ marginBottom: 12 }}>
                               <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 4 }}>Outcome</div>
                               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: workflowOutcome ? 10 : 0 }}>
                                 {(currentPhase === 'pre-call' ? ['confirmed', 'blocked', 'waiting', 'closed'] : ['blocked', 'waiting', 'closed'] as const).map((o: string) => {
@@ -3314,7 +3315,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                   <span>✓</span> Case resolved
                 </div>
               ) : (
-                <button className="ccbhc-secondary-btn" onClick={() => { setResolved(true); persist({ resolved: true }); onStatusChange?.(clientId, 'Closed'); }}>Mark resolved</button>
+                <button className="ccbhc-secondary-btn" onClick={() => { setWorkflowOutcome('closed'); setOutcomeReason(''); setPingDate(''); persist({ workflowOutcome: 'closed', outcomeReason: '', pingDate: '' }); setTimeout(() => outcomeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50); }}>Mark resolved</button>
               )}
             </div>
 
