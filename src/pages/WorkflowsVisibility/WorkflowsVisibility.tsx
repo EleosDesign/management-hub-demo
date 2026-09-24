@@ -1151,7 +1151,7 @@ function CaseloadView({ onClientClick, routedClients, clientStatuses }: { onClie
                       <button className="ccbhc-alert__dismiss" onClick={e => e.stopPropagation()}>×</button>
                     </div>
                     <div className="ccbhc-alert__time">{todoNextStepDate(info.days)}</div>
-                    <div style={{ fontSize: 12, color: '#4b5563', marginTop: 2, lineHeight: 1.4 }}>{cl.riskReason} — {info.next.toLowerCase()}.</div>
+                    <div style={{ fontSize: 12, color: '#4b5563', marginTop: 2, lineHeight: 1.4 }}>{cl.riskReason}{info.next !== '—' ? ` — ${info.next.toLowerCase()}.` : '.'}</div>
                   </div>
                 </div>
               ))}
@@ -1391,7 +1391,7 @@ function OrgView({ onClientClick }: { onClientClick: (id: string, clinician: str
                       <button className="ccbhc-alert__dismiss" onClick={e => e.stopPropagation()}>×</button>
                     </div>
                     <div className="ccbhc-alert__time">{todoNextStepDate(info.days)}</div>
-                    <div style={{ fontSize: 12, color: '#4b5563', marginTop: 2, lineHeight: 1.4 }}>{cl.riskReason} — {info.next.toLowerCase()}.</div>
+                    <div style={{ fontSize: 12, color: '#4b5563', marginTop: 2, lineHeight: 1.4 }}>{cl.riskReason}{info.next !== '—' ? ` — ${info.next.toLowerCase()}.` : '.'}</div>
                   </div>
                 </div>
               ))}
