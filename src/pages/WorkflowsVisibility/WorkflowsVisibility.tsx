@@ -2606,6 +2606,16 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
   useEffect(() => {
     if (!persistedState) return;
     if (persistedState.resolved) { onStatusChange?.(clientId, 'Closed'); return; }
+    // 4-phase workflow takes precedence
+    if (persistedState.phaseHistory && persistedState.phaseHistory.length > 0) {
+      const phase = persistedState.currentPhase;
+      const outcome = persistedState.workflowOutcome;
+      if (outcome === 'blocked') onStatusChange?.(clientId, 'Blocked');
+      else if (outcome === 'waiting') onStatusChange?.(clientId, 'Waiting');
+      else if (outcome === 'closed') onStatusChange?.(clientId, 'Closed');
+      else onStatusChange?.(clientId, `${phase.charAt(0).toUpperCase() + phase.slice(1).replace('-', ' ')} — in progress`);
+      return;
+    }
     if (persistedState.done) {
       const s = persistedState.selectedAction;
       onStatusChange?.(clientId, s === 'office' ? 'Office visit scheduled' : s === 'phone' ? 'Called — DHS walkthrough done' : 'Called — left voicemail');
