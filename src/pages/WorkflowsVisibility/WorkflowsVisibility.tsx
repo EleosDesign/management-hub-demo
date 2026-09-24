@@ -3207,7 +3207,6 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                                   {isSchedulingAction && <option>Call client — walk through portal together</option>}
                                   <option>Confirm submission received in portal</option>
                                   <option>Confirm active status on Medicaid</option>
-                                  <option>Upload OHCA eligibility document to EHR</option>
                                 </>}
                               </select>
                               {nextStepAction && (
