@@ -78,6 +78,7 @@ type WorkflowStatus =
 interface Client {
   id: string;
   initials: string;
+  name?: string;
   medicaidStatus: MedicaidStatus;
   treatmentPlanEnd: string;
   lastServiceDate: string;
@@ -160,42 +161,42 @@ const CLINICIANS: ClinicianRecord[] = [
     caseload: 32, triggeredCount: 27, atRiskCount: 3,
     notTriggered: [
       {
-        id: 'CL-10001', initials: 'MR', medicaidStatus: 'At Risk',
+        id: 'CL-10001', initials: 'MR', name: 'Marcus Rivera', medicaidStatus: 'At Risk',
         treatmentPlanEnd: 'Apr 1, 2027', lastServiceDate: 'Sep 22, 2026',
         daysRemaining: 6, riskReason: 'Address change flagged — Medicaid record must be updated',
         status: 'not-triggered', action: 'Check PA status',
         workflowStatus: 'Flagged',
       },
       {
-        id: 'CL-10238', initials: 'JS', medicaidStatus: 'Lost',
+        id: 'CL-10238', initials: 'JS', name: 'James Spencer', medicaidStatus: 'Lost',
         treatmentPlanEnd: 'Oct 14, 2026', lastServiceDate: 'Sep 8, 2026',
         daysRemaining: 6, riskReason: `Address change reported ${daysAgo(14)} — Medicaid terminated, retro window: 8 days`,
         status: 'not-triggered', alert: 'medicaid-loss', retroWindow: 8, action: 'Open retro workflow',
         workflowStatus: 'Waiting on insurance decision',
       },
       {
-        id: 'CL-10519', initials: 'AR', medicaidStatus: 'Active',
+        id: 'CL-10519', initials: 'AR', name: 'Alex Rodriguez', medicaidStatus: 'Active',
         treatmentPlanEnd: 'Oct 3, 2026', lastServiceDate: 'Aug 30, 2026',
         daysRemaining: 6, riskReason: 'Income reduction reported — Medicaid eligibility at risk mid-year',
         workflowStatus: 'Called — left voicemail',
         status: 'not-triggered', action: 'Schedule service',
       },
       {
-        id: 'CL-10774', initials: 'MW', medicaidStatus: 'Active',
+        id: 'CL-10774', initials: 'MW', name: 'Michael Webb', medicaidStatus: 'Active',
         treatmentPlanEnd: 'Dec 20, 2026', lastServiceDate: 'Sep 8, 2026',
         daysRemaining: 6, riskReason: 'Household composition change — payer mismatch flagged',
         status: 'not-triggered', alert: 'wrong-payer', action: 'Review payer routing',
         workflowStatus: 'Wants help',
       },
       {
-        id: 'CL-11042', initials: 'TC', medicaidStatus: 'At Risk',
+        id: 'CL-11042', initials: 'TC', name: 'Tina Chen', medicaidStatus: 'At Risk',
         treatmentPlanEnd: 'Nov 7, 2026', lastServiceDate: 'Sep 3, 2026',
         daysRemaining: 6, riskReason: 'Address change — payer reassignment pending, PA not yet approved',
         status: 'not-triggered', action: 'Check PA status',
         workflowStatus: 'Wants help',
       },
       {
-        id: 'CL-11198', initials: 'LB', medicaidStatus: 'Active',
+        id: 'CL-11198', initials: 'LB', name: 'Laura Bennett', medicaidStatus: 'Active',
         treatmentPlanEnd: 'Jan 12, 2027', lastServiceDate: 'Aug 22, 2026',
         daysRemaining: 6, riskReason: 'Lost employer coverage — Medicaid application in progress',
         workflowStatus: 'Waiting on client to send documents',
@@ -203,11 +204,11 @@ const CLINICIANS: ClinicianRecord[] = [
       },
     ],
     triggered: [
-      { id: 'CL-10102', initials: 'KP', medicaidStatus: 'Active', treatmentPlanEnd: 'Dec 5, 2026',  lastServiceDate: 'Sep 22, 2026', daysRemaining: 0, riskReason: 'Income change reported — eligibility redetermination completed', status: 'triggered', triggeredDate: 'Sep 22', workflowStatus: 'Closed' },
-      { id: 'CL-10145', initials: 'RM', medicaidStatus: 'Active', treatmentPlanEnd: 'Nov 18, 2026', lastServiceDate: 'Sep 20, 2026', daysRemaining: 0, riskReason: 'Separation reported — household size change, eligibility impact pending', status: 'triggered', triggeredDate: 'Sep 20' },
-      { id: 'CL-10203', initials: 'GH', medicaidStatus: 'Active', treatmentPlanEnd: 'Feb 1, 2027',  lastServiceDate: 'Sep 19, 2026', daysRemaining: 0, riskReason: 'Address change resolved — Medicaid record updated, redetermination mail rerouted', status: 'triggered', triggeredDate: 'Sep 19', workflowStatus: 'Closed' },
-      { id: 'CL-10311', initials: 'NF', medicaidStatus: 'Active', treatmentPlanEnd: 'Oct 30, 2026', lastServiceDate: 'Sep 17, 2026', daysRemaining: 0, riskReason: 'Household size change — benefits reviewed and updated', status: 'triggered', triggeredDate: 'Sep 17', workflowStatus: 'Closed' },
-      { id: 'CL-10402', initials: 'DW', medicaidStatus: 'Active', treatmentPlanEnd: 'Dec 14, 2026', lastServiceDate: 'Sep 15, 2026', daysRemaining: 0, riskReason: 'Employer coverage loss — Medicaid enrollment confirmed', status: 'triggered', triggeredDate: 'Sep 15', workflowStatus: 'Closed' },
+      { id: 'CL-10102', initials: 'KP', name: 'Karen Park',    medicaidStatus: 'Active', treatmentPlanEnd: 'Dec 5, 2026',  lastServiceDate: 'Sep 22, 2026', daysRemaining: 0, riskReason: 'Income change reported — eligibility redetermination completed', status: 'triggered', triggeredDate: 'Sep 22', workflowStatus: 'Closed' },
+      { id: 'CL-10145', initials: 'RM', name: 'Rosa Martinez', medicaidStatus: 'Active', treatmentPlanEnd: 'Nov 18, 2026', lastServiceDate: 'Sep 20, 2026', daysRemaining: 0, riskReason: 'Separation reported — household size change, eligibility impact pending', status: 'triggered', triggeredDate: 'Sep 20' },
+      { id: 'CL-10203', initials: 'GH', name: 'George Harris', medicaidStatus: 'Active', treatmentPlanEnd: 'Feb 1, 2027',  lastServiceDate: 'Sep 19, 2026', daysRemaining: 0, riskReason: 'Address change resolved — Medicaid record updated, redetermination mail rerouted', status: 'triggered', triggeredDate: 'Sep 19', workflowStatus: 'Closed' },
+      { id: 'CL-10311', initials: 'NF', name: 'Nina Foster',   medicaidStatus: 'Active', treatmentPlanEnd: 'Oct 30, 2026', lastServiceDate: 'Sep 17, 2026', daysRemaining: 0, riskReason: 'Household size change — benefits reviewed and updated', status: 'triggered', triggeredDate: 'Sep 17', workflowStatus: 'Closed' },
+      { id: 'CL-10402', initials: 'DW', name: 'David Walsh',   medicaidStatus: 'Active', treatmentPlanEnd: 'Dec 14, 2026', lastServiceDate: 'Sep 15, 2026', daysRemaining: 0, riskReason: 'Employer coverage loss — Medicaid enrollment confirmed', status: 'triggered', triggeredDate: 'Sep 15', workflowStatus: 'Closed' },
     ],
   },
   {
@@ -1141,14 +1142,16 @@ function CaseloadView({ onClientClick, routedClients, clientStatuses }: { onClie
             <div className="ccbhc-alerts-scroll">
               {myClients.map(({ cl, info }, i) => (
                 <div key={i} className="ccbhc-alert" style={{ cursor: 'pointer' }} onClick={() => onClientClick(cl.id)}>
-                  <div className="ccbhc-alert__body" style={{ width: '100%' }}>
+                  <div className="ccbhc-alert__icon">
+                    {cl.alert === 'medicaid-loss' ? '⚡' : cl.alert === 'wrong-payer' ? '🔍' : info.days === 0 ? '⚡' : '↻'}
+                  </div>
+                  <div className="ccbhc-alert__body">
                     <div className="ccbhc-alert__header-row">
-                      <div className="ccbhc-alert__title" style={{ fontSize: 13 }}>{cl.id}</div>
-                      <span style={{ fontSize: 11, color: info.days === 0 ? '#dc2626' : info.days <= 2 ? '#d97706' : '#64748b', fontWeight: 500 }}>
-                        {todoNextStepDate(info.days)}
-                      </span>
+                      <div className="ccbhc-alert__title">{cl.name ?? cl.id}</div>
+                      <button className="ccbhc-alert__dismiss" onClick={e => e.stopPropagation()}>×</button>
                     </div>
-                    <div style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>{info.next}</div>
+                    <div className="ccbhc-alert__time">{todoNextStepDate(info.days)}</div>
+                    <div style={{ fontSize: 12, color: '#4b5563', marginTop: 2, lineHeight: 1.4 }}>{cl.riskReason} — {info.next.toLowerCase()}.</div>
                   </div>
                 </div>
               ))}
@@ -1379,14 +1382,16 @@ function OrgView({ onClientClick }: { onClientClick: (id: string, clinician: str
             <div className="ccbhc-alerts-scroll">
               {myClients.map(({ cl, info }, i) => (
                 <div key={i} className="ccbhc-alert" style={{ cursor: 'pointer' }} onClick={() => onClientClick(cl.id, me.name)}>
-                  <div className="ccbhc-alert__body" style={{ width: '100%' }}>
+                  <div className="ccbhc-alert__icon">
+                    {cl.alert === 'medicaid-loss' ? '⚡' : cl.alert === 'wrong-payer' ? '🔍' : info.days === 0 ? '⚡' : '↻'}
+                  </div>
+                  <div className="ccbhc-alert__body">
                     <div className="ccbhc-alert__header-row">
-                      <div className="ccbhc-alert__title" style={{ fontSize: 13 }}>{cl.id}</div>
-                      <span style={{ fontSize: 11, color: info.days === 0 ? '#dc2626' : info.days <= 2 ? '#d97706' : '#64748b', fontWeight: 500 }}>
-                        {todoNextStepDate(info.days)}
-                      </span>
+                      <div className="ccbhc-alert__title">{cl.name ?? cl.id}</div>
+                      <button className="ccbhc-alert__dismiss" onClick={e => e.stopPropagation()}>×</button>
                     </div>
-                    <div style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>{info.next}</div>
+                    <div className="ccbhc-alert__time">{todoNextStepDate(info.days)}</div>
+                    <div style={{ fontSize: 12, color: '#4b5563', marginTop: 2, lineHeight: 1.4 }}>{cl.riskReason} — {info.next.toLowerCase()}.</div>
                   </div>
                 </div>
               ))}
