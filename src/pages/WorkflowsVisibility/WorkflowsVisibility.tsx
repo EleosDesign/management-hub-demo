@@ -3161,7 +3161,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                             </div>}
 
                             {/* Assign next step to — shown after outcome selected (reason required for blocked/waiting/closed) */}
-                            {(outcomeReason || workflowOutcome === 'confirmed' || isSchedulingAction) && <div style={{ marginBottom: 12 }}>
+                            {(outcomeReason || workflowOutcome === 'confirmed' || isSchedulingAction) && workflowOutcome !== 'escalate' && <div style={{ marginBottom: 12 }}>
                               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
                                 <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>Assign next step to</div>
                                 {assignedTo !== clinicianName && (
@@ -3235,7 +3235,13 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                             </div>
 
                             {/* Action buttons */}
-                            {workflowOutcome ? (
+                            {workflowOutcome === 'escalate' && outcomeReason ? (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#fffbeb', border: '1.5px solid #fde68a', borderRadius: 8 }}>
+                                <span style={{ fontSize: 14 }}>⚠</span>
+                                <span style={{ fontSize: 13, color: '#92400e', fontWeight: 500 }}>Case escalated — awaiting supervisor review</span>
+                                <button style={{ marginLeft: 'auto', fontSize: 11, color: '#b45309', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 500 }} onClick={() => { setWorkflowOutcome(null); setOutcomeReason(''); setPingDate(''); }}>Clear</button>
+                              </div>
+                            ) : workflowOutcome ? (
                               <div style={{ display: 'flex', gap: 8 }}>
                                 {workflowOutcome === 'confirmed' ? (
                                   <button className="ccbhc-primary-btn" style={{ flex: 1 }} onClick={() => {
