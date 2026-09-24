@@ -2573,6 +2573,9 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
   const [assignedNavigator, setAssignedNavigator] = useState(persistedState?.assignedNavigator ?? '');
   const [showNavigatorPicker, setShowNavigatorPicker] = useState(false);
   const [resolved, setResolved] = useState(persistedState?.resolved ?? false);
+  const [supervisorEscalated, setSupervisorEscalated] = useState(false);
+  const [supervisorReason, setSupervisorReason] = useState('');
+  const [showSupervisorForm, setShowSupervisorForm] = useState(false);
 
   // 4-phase workflow state (Marcus/Patricia)
   const [currentPhase, setCurrentPhase] = useState<'pre-call' | 'contact' | 'in-session' | 'post-submission'>(persistedState?.currentPhase ?? 'pre-call');
@@ -3279,32 +3282,35 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
           <div className="ccbhc-triage-col ccbhc-triage-col--right">
             <div className="ccbhc-triage-section-title">Quick Actions</div>
             <div className="ccbhc-other-option" style={{ marginBottom: 10 }}>
-              <div style={{ fontWeight: 500, fontSize: 13, color: '#1e293b', marginBottom: 4 }}>Escalate to care navigator</div>
-              <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>Route to a navigator for direct county liaison and DHS follow-up.</div>
-              {assignedNavigator ? (
+              <div style={{ fontWeight: 500, fontSize: 13, color: '#1e293b', marginBottom: 4 }}>Escalate to supervisor</div>
+              <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>Flag this case for supervisor review and provide a reason for escalation.</div>
+              {supervisorEscalated ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#16a34a', fontWeight: 600 }}>
-                  <span>✓</span> Assigned to {assignedNavigator}
+                  <span>✓</span> Escalated to supervisor
+                  <button style={{ background: 'none', border: 'none', padding: 0, fontSize: 11, color: '#94a3b8', cursor: 'pointer', marginLeft: 4, fontFamily: 'inherit' }} onClick={() => { setSupervisorEscalated(false); setSupervisorReason(''); setShowSupervisorForm(false); }}>Undo</button>
                 </div>
-              ) : showNavigatorPicker ? (
+              ) : showSupervisorForm ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <select
+                  <textarea
                     autoFocus
-                    defaultValue=""
-                    style={{ fontSize: 13, padding: '6px 8px', border: '1px solid #d1d5db', borderRadius: 6, color: '#1e293b', background: '#fff', cursor: 'pointer', width: '100%' }}
-                    onChange={e => { if (e.target.value) { setAssignedNavigator(e.target.value); setShowNavigatorPicker(false); persist({ assignedNavigator: e.target.value }); } }}
-                  >
-                    <option value="" disabled>Select navigator…</option>
-                    {CARE_NAVIGATORS.map(name => <option key={name} value={name}>{name}</option>)}
-                  </select>
-                  <button
-                    style={{ fontSize: 12, color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', padding: '0', textAlign: 'left' }}
-                    onClick={() => setShowNavigatorPicker(false)}
-                  >
-                    Cancel
-                  </button>
+                    placeholder="Reason for escalation…"
+                    value={supervisorReason}
+                    onChange={e => setSupervisorReason(e.target.value)}
+                    rows={3}
+                    style={{ fontSize: 13, padding: '6px 8px', border: '1px solid #d1d5db', borderRadius: 6, color: '#1e293b', background: '#fff', resize: 'none', width: '100%', boxSizing: 'border-box', fontFamily: 'inherit' }}
+                  />
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button
+                      className="ccbhc-primary-btn"
+                      disabled={!supervisorReason.trim()}
+                      style={{ opacity: supervisorReason.trim() ? 1 : 0.4, cursor: supervisorReason.trim() ? 'pointer' : 'not-allowed', flex: 1, fontSize: 12 }}
+                      onClick={() => { setSupervisorEscalated(true); setShowSupervisorForm(false); }}
+                    >Submit</button>
+                    <button style={{ fontSize: 12, color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', padding: '0' }} onClick={() => setShowSupervisorForm(false)}>Cancel</button>
+                  </div>
                 </div>
               ) : (
-                <button className="ccbhc-secondary-btn" onClick={() => setShowNavigatorPicker(true)}>Assign navigator</button>
+                <button className="ccbhc-secondary-btn" onClick={() => setShowSupervisorForm(true)}>Escalate</button>
               )}
             </div>
             <div className="ccbhc-other-option">
