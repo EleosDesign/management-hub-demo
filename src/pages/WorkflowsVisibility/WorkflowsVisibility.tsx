@@ -1094,7 +1094,7 @@ function CaseloadView({ onClientClick, routedClients, clientStatuses }: { onClie
                               return (
                                 <div style={{ lineHeight: 1.5 }}>
                                   <div style={{ fontSize: 12, color: '#1e293b', fontWeight: 500 }}>{info.next}</div>
-                                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 1 }}>{clinician.name.split(' ')[0]} · {nextStepDate(info.days)}</div>
+                                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 1 }}>{nextStepDate(info.days)}</div>
                                 </div>
                               );
                             })()}
