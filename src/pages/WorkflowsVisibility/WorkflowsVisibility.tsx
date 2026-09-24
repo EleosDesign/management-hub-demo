@@ -2157,7 +2157,7 @@ function TreatmentPlanRenewalDetail({ clientId, clinicianName, onBack }: { clien
               <div className="ccbhc-doc-field"><span className="ccbhc-doc-field__label">Crisis plan</span><span className="ccbhc-doc-field__value">Updated May 2026 — on file</span></div>
               <div className="ccbhc-doc-field"><span className="ccbhc-doc-field__label">Discharge criteria</span><span className="ccbhc-doc-field__value">Symptom remission, stable housing, social support</span></div>
               <div className="ccbhc-doc-field"><span className="ccbhc-doc-field__label">Collateral contacts</span><span className="ccbhc-doc-field__value">Family member listed (consent on file)</span></div>
-              <div className="ccbhc-doc-field"><span className="ccbhc-doc-field__label">Billing auth</span><span className="ccbhc-doc-field__value">SoonerCare — no PA required for individual therapy</span></div>
+              <div className="ccbhc-doc-field"><span className="ccbhc-doc-field__label">Billing auth</span><span className="ccbhc-doc-field__value">Medicaid — no PA required for individual therapy</span></div>
             </div>
           )}
           {!done ? (
@@ -2246,7 +2246,7 @@ function PAStatusDetail({ clientId, clinicianName, onBack }: { clientId: string;
             <span className="ccbhc-client-header__id">{CLIENT_NAMES[clientId] ?? clientId} — {client.riskReason || 'Prior authorization pending — day 14 of 15'}</span>
             <MedicaidPill status="At Risk" />
           </div>
-          <div className="ccbhc-client-header__meta">{clientId} · {clinician?.county ?? 'Unknown County'} · Active Medicaid (SoonerCare)</div>
+          <div className="ccbhc-client-header__meta">{clientId} · {clinician?.county ?? 'Unknown County'} · Active Medicaid (Medicaid)</div>
         </div>
       </div>
 
@@ -2262,7 +2262,7 @@ function PAStatusDetail({ clientId, clinicianName, onBack }: { clientId: string;
           </div>
           <div className="ccbhc-detail-group">
             <div className="ccbhc-detail-label">Insurance</div>
-            <div className="ccbhc-detail-value">Active Medicaid (SoonerCare) through Aug 2026</div>
+            <div className="ccbhc-detail-value">Active Medicaid (Medicaid) through Aug 2026</div>
           </div>
           <div className="ccbhc-detail-group">
             <div className="ccbhc-detail-label">Assigned</div>
@@ -2281,8 +2281,8 @@ function PAStatusDetail({ clientId, clinicianName, onBack }: { clientId: string;
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {[
                 { date: 'May 11, 2026', actor: 'Care team', event: 'PA submitted', detail: '', type: 'outreach' as const },
-                { date: 'May 15, 2026', actor: 'SoonerCare', event: 'Under review', detail: 'SoonerCare portal', type: 'flag' as const },
-                { date: 'May 22, 2026', actor: 'SoonerCare', event: 'No decision yet', detail: 'Day 11 of 15-day window', type: 'flag' as const },
+                { date: 'May 15, 2026', actor: 'Medicaid', event: 'Under review', detail: 'Medicaid portal', type: 'flag' as const },
+                { date: 'May 22, 2026', actor: 'Medicaid', event: 'No decision yet', detail: 'Day 11 of 15-day window', type: 'flag' as const },
                 ...quickActionHistory.map(e => ({ ...e, type: 'outreach' as const })),
               ].map((entry, i) => (
                 <div key={i} style={{ display: 'flex', gap: 10 }}>
@@ -2321,23 +2321,23 @@ function PAStatusDetail({ clientId, clinicianName, onBack }: { clientId: string;
             ))}
           </div>
           <div className="ccbhc-detail-value" style={{ fontSize: 12 }}>
-            SoonerCare standard review window is 15 business days. Day 14 of 15 — decision expected tomorrow.
+            Medicaid standard review window is 15 business days. Day 14 of 15 — decision expected tomorrow.
           </div>
           <div className="ccbhc-escalation-card">
             <div className="ccbhc-escalation-card__title">Escalation recommended</div>
-            <div className="ccbhc-escalation-card__text">If no decision by May 27, Eleos will auto-submit an expedite request to SoonerCare.</div>
+            <div className="ccbhc-escalation-card__text">If no decision by May 27, Eleos will auto-submit an expedite request to Medicaid.</div>
           </div>
           {!done ? (
             <>
               <div className="ccbhc-recommendation-card__actions">
                 <button className="ccbhc-primary-btn" onClick={() => setDone(true)}>Request expedited review now</button>
                 <button className="ccbhc-secondary-btn" onClick={() => setShowContact(s => !s)}>
-                  {showContact ? 'Hide contact info' : 'Contact SoonerCare provider line'}
+                  {showContact ? 'Hide contact info' : 'Contact Medicaid provider line'}
                 </button>
               </div>
               {showContact && (
                 <div className="ccbhc-meta-stat" style={{ marginTop: 10 }}>
-                  <div className="ccbhc-meta-stat__label">SoonerCare Provider Services</div>
+                  <div className="ccbhc-meta-stat__label">Medicaid Provider Services</div>
                   <div className="ccbhc-meta-stat__value">1-800-522-0114</div>
                   <div style={{ fontSize: 11, color: '#6b7280', marginTop: 4 }}>Mon–Fri 8 AM–5 PM CT · Reference PA-2026-10441</div>
                 </div>
@@ -2347,7 +2347,7 @@ function PAStatusDetail({ clientId, clinicianName, onBack }: { clientId: string;
             <div className="ccbhc-approved-state">
               <div className="ccbhc-approved-state__icon">✓</div>
               <div className="ccbhc-approved-state__title">Request submitted</div>
-              <div className="ccbhc-approved-state__desc">Expedite request submitted to SoonerCare portal.</div>
+              <div className="ccbhc-approved-state__desc">Expedite request submitted to Medicaid portal.</div>
               <button className="ccbhc-secondary-btn" onClick={() => setDone(false)}>Undo</button>
             </div>
           )}
@@ -2358,18 +2358,18 @@ function PAStatusDetail({ clientId, clinicianName, onBack }: { clientId: string;
           <div className="ccbhc-triage-section-title">Quick Actions</div>
           <div className="ccbhc-other-option" style={{ marginBottom: 10 }}>
             <div style={{ fontWeight: 500, fontSize: 13, color: '#1e293b', marginBottom: 4 }}>Request expedited review</div>
-            <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>Submit an expedite request to SoonerCare now. Ref: PA-2026-10441.</div>
+            <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>Submit an expedite request to Medicaid now. Ref: PA-2026-10441.</div>
             {qaExpedite ? (
               <div style={{ fontSize: 12, color: '#4f46e5', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
                 ✓ Expedite requested
                 <button style={{ fontSize: 11, color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }} onClick={() => { setQaExpedite(false); setQuickActionHistory(h => h.filter(e => !e.event.startsWith('Expedite request'))); }}>Undo</button>
               </div>
             ) : (
-              <button className="ccbhc-secondary-btn" onClick={() => { setQaExpedite(true); setQuickActionHistory(h => [{ date: TODAY, actor: 'Care team', event: 'Expedite request submitted', detail: 'Submitted to SoonerCare portal · Ref: PA-2026-10441' }, ...h.filter(e => !e.event.startsWith('Expedite request'))]); }}>Request expedite</button>
+              <button className="ccbhc-secondary-btn" onClick={() => { setQaExpedite(true); setQuickActionHistory(h => [{ date: TODAY, actor: 'Care team', event: 'Expedite request submitted', detail: 'Submitted to Medicaid portal · Ref: PA-2026-10441' }, ...h.filter(e => !e.event.startsWith('Expedite request'))]); }}>Request expedite</button>
             )}
           </div>
           <div className="ccbhc-other-option" style={{ marginBottom: 10 }}>
-            <div style={{ fontWeight: 500, fontSize: 13, color: '#1e293b', marginBottom: 4 }}>Call SoonerCare</div>
+            <div style={{ fontWeight: 500, fontSize: 13, color: '#1e293b', marginBottom: 4 }}>Call Medicaid</div>
             <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>Provider line: 1-800-522-0114 · Mon–Fri 8 AM–5 PM CT.</div>
             {qaLogged ? (
               <div style={{ fontSize: 12, color: '#4f46e5', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -2377,7 +2377,7 @@ function PAStatusDetail({ clientId, clinicianName, onBack }: { clientId: string;
                 <button style={{ fontSize: 11, color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }} onClick={() => { setQaLogged(false); setQuickActionHistory(h => h.filter(e => !e.event.startsWith('Call logged'))); }}>Undo</button>
               </div>
             ) : (
-              <button className="ccbhc-secondary-btn" onClick={() => { setQaLogged(true); setQuickActionHistory(h => [{ date: TODAY, actor: 'Care team', event: 'Call logged', detail: 'Called SoonerCare provider line · 1-800-522-0114' }, ...h.filter(e => !e.event.startsWith('Call logged'))]); }}>Log call</button>
+              <button className="ccbhc-secondary-btn" onClick={() => { setQaLogged(true); setQuickActionHistory(h => [{ date: TODAY, actor: 'Care team', event: 'Call logged', detail: 'Called Medicaid provider line · 1-800-522-0114' }, ...h.filter(e => !e.event.startsWith('Call logged'))]); }}>Log call</button>
             )}
           </div>
           <div className="ccbhc-other-option" style={{ marginBottom: 10 }}>
@@ -2404,7 +2404,7 @@ function PAAppealDetail({ clientId, clinicianName, onBack }: { clientId: string;
   const [done, setDone] = useState(false);
   const [modifying, setModifying] = useState(false);
   const clinician = CLINICIANS.find(c => [...c.notTriggered, ...c.triggered].some(cl => cl.id === clientId));
-  const defaultAppeal = `Client has CCBHC-qualifying diagnosis (F20.9 — Schizophrenia). Day services were delivered per documented treatment plan. Clinical necessity supported by treating clinician notes from May 6. SoonerCare policy §3.4.2 supports appeal for this service type.`;
+  const defaultAppeal = `Client has CCBHC-qualifying diagnosis (F20.9 — Schizophrenia). Day services were delivered per documented treatment plan. Clinical necessity supported by treating clinician notes from May 6. Medicaid policy §3.4.2 supports appeal for this service type.`;
   const [appealText, setAppealText] = useState(defaultAppeal);
 
   return (
@@ -2420,7 +2420,7 @@ function PAAppealDetail({ clientId, clinicianName, onBack }: { clientId: string;
             <span className="ccbhc-client-header__id">{CLIENT_NAMES[clientId] ?? clientId} — {client.riskReason || 'Appeal pending TSS review'}</span>
             <MedicaidPill status="At Risk" />
           </div>
-          <div className="ccbhc-client-header__meta">{clientId} · {clinician?.county ?? 'Unknown County'} · Active Medicaid (SoonerCare)</div>
+          <div className="ccbhc-client-header__meta">{clientId} · {clinician?.county ?? 'Unknown County'} · Active Medicaid (Medicaid)</div>
         </div>
       </div>
 
@@ -2436,7 +2436,7 @@ function PAAppealDetail({ clientId, clinicianName, onBack }: { clientId: string;
           </div>
           <div className="ccbhc-detail-group">
             <div className="ccbhc-detail-label">Insurance</div>
-            <div className="ccbhc-detail-value">Active Medicaid (SoonerCare) through Nov 2026</div>
+            <div className="ccbhc-detail-value">Active Medicaid (Medicaid) through Nov 2026</div>
           </div>
           <div className="ccbhc-detail-group">
             <div className="ccbhc-detail-label">Assigned</div>
@@ -2509,7 +2509,7 @@ function PAAppealDetail({ clientId, clinicianName, onBack }: { clientId: string;
                     <li>Client has CCBHC-qualifying diagnosis (F20.9 — Schizophrenia)</li>
                     <li>Day services delivered per documented treatment plan</li>
                     <li>Clinical necessity supported by treating clinician notes from May 6</li>
-                    <li>SoonerCare policy §3.4.2 supports appeal for this service type</li>
+                    <li>Medicaid policy §3.4.2 supports appeal for this service type</li>
                   </ul>
                   <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
                     <button style={{ flex: 1, fontFamily: 'inherit', fontSize: 13, fontWeight: 600, color: '#4f46e5', background: '#fff', border: '1.5px solid #c7d2fe', borderRadius: 10, padding: '10px 0', cursor: 'pointer' }} onClick={() => setDone(true)}>Approve and submit</button>
@@ -2522,7 +2522,7 @@ function PAAppealDetail({ clientId, clinicianName, onBack }: { clientId: string;
             <div className="ccbhc-approved-state">
               <div className="ccbhc-approved-state__icon">✓</div>
               <div className="ccbhc-approved-state__title">Appeal submitted</div>
-              <div className="ccbhc-approved-state__desc">Appeal submitted to SoonerCare portal. Reference #APL-2026-3847.</div>
+              <div className="ccbhc-approved-state__desc">Appeal submitted to Medicaid portal. Reference #APL-2026-3847.</div>
               <button className="ccbhc-secondary-btn" onClick={() => setDone(false)}>Undo</button>
             </div>
           )}
@@ -2533,12 +2533,12 @@ function PAAppealDetail({ clientId, clinicianName, onBack }: { clientId: string;
           <div className="ccbhc-triage-section-title">Quick Actions</div>
           <div className="ccbhc-other-option" style={{ marginBottom: 10 }}>
             <div style={{ fontWeight: 500, fontSize: 13, color: '#1e293b', marginBottom: 4 }}>Submit appeal</div>
-            <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>Approve the draft and submit to SoonerCare. Deadline: Jun 19.</div>
+            <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>Approve the draft and submit to Medicaid. Deadline: Jun 19.</div>
             <button className="ccbhc-secondary-btn" onClick={() => {}}>Submit appeal</button>
           </div>
           <div className="ccbhc-other-option" style={{ marginBottom: 10 }}>
             <div style={{ fontWeight: 500, fontSize: 13, color: '#1e293b', marginBottom: 4 }}>Peer-to-peer review</div>
-            <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>Request a peer-to-peer with SoonerCare medical director as an alternative.</div>
+            <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>Request a peer-to-peer with Medicaid medical director as an alternative.</div>
             <button className="ccbhc-secondary-btn" onClick={() => {}}>Request review</button>
           </div>
           <div className="ccbhc-other-option" style={{ marginBottom: 10 }}>
@@ -2846,7 +2846,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                   ];
 
                   const CLOSED_REASONS = [
-                    { label: 'Address updated — active status confirmed on SoonerCare', terminal: false },
+                    { label: 'Address updated — active status confirmed on Medicaid', terminal: false },
                     { label: 'Client refused — no further outreach', terminal: true },
                     { label: 'Client refused — client discontinuing services', terminal: true },
                     { label: 'Unreachable — maximum attempts reached, escalated to supervisor', terminal: true },
@@ -3078,7 +3078,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                                 </> : <>
                                   {isSchedulingAction && <option>Call client — walk through portal together</option>}
                                   <option>Confirm submission received in portal</option>
-                                  <option>Confirm active status on SoonerCare</option>
+                                  <option>Confirm active status on Medicaid</option>
                                   <option>Upload OHCA eligibility document to EHR</option>
                                 </>}
                               </select>

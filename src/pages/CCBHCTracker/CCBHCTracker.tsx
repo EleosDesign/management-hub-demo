@@ -528,7 +528,7 @@ const REAL_TIME_ALERTS: AlertItem[] = [
   {
     icon: '📄',
     title: 'PA expiring in 48h: CL-11042',
-    desc: 'SoonerCare prior auth renewal auto-submitted to Medicaid portal',
+    desc: 'Medicaid prior auth renewal auto-submitted to Medicaid portal',
     status: 'Submitted', statusType: 'done', time: '11:20',
   },
   {
@@ -546,7 +546,7 @@ const REAL_TIME_ALERTS: AlertItem[] = [
   {
     icon: '📄',
     title: 'ECHO form auto-filed: Pawnee Team 2',
-    desc: '5 payer echo entries auto-filed to SoonerCare portal — 2.5 hrs of manual entry saved',
+    desc: '5 payer echo entries auto-filed to Medicaid portal — 2.5 hrs of manual entry saved',
     status: 'Filed', statusType: 'done', time: '09:15',
   },
 ];
@@ -1546,7 +1546,7 @@ function TreatmentPlanRenewalDetail({ clientId, clinicianName, onBack }: { clien
               <div className="ccbhc-doc-field"><span className="ccbhc-doc-field__label">Crisis plan</span><span className="ccbhc-doc-field__value">Updated May 2026 — on file</span></div>
               <div className="ccbhc-doc-field"><span className="ccbhc-doc-field__label">Discharge criteria</span><span className="ccbhc-doc-field__value">Symptom remission, stable housing, social support</span></div>
               <div className="ccbhc-doc-field"><span className="ccbhc-doc-field__label">Collateral contacts</span><span className="ccbhc-doc-field__value">Family member listed (consent on file)</span></div>
-              <div className="ccbhc-doc-field"><span className="ccbhc-doc-field__label">Billing auth</span><span className="ccbhc-doc-field__value">SoonerCare — no PA required for individual therapy</span></div>
+              <div className="ccbhc-doc-field"><span className="ccbhc-doc-field__label">Billing auth</span><span className="ccbhc-doc-field__value">Medicaid — no PA required for individual therapy</span></div>
             </div>
           )}
           {!done ? (
@@ -1613,7 +1613,7 @@ function PAStatusDetail({ clientId, clinicianName, onBack }: { clientId: string;
             <span className="ccbhc-client-header__id">{clientId} — Prior authorization pending — day 14 of 15</span>
             <MedicaidPill status="At Risk" />
           </div>
-          <div className="ccbhc-client-header__meta">Pawnee County · Active Medicaid (SoonerCare)</div>
+          <div className="ccbhc-client-header__meta">Pawnee County · Active Medicaid (Medicaid)</div>
         </div>
       </div>
 
@@ -1623,7 +1623,7 @@ function PAStatusDetail({ clientId, clinicianName, onBack }: { clientId: string;
           <div className="ccbhc-triage-section-title">Client context</div>
           <div className="ccbhc-detail-group">
             <div className="ccbhc-detail-label">Insurance</div>
-            <div className="ccbhc-detail-value">Active Medicaid (SoonerCare) through Aug 2026</div>
+            <div className="ccbhc-detail-value">Active Medicaid (Medicaid) through Aug 2026</div>
           </div>
           <div className="ccbhc-detail-group">
             <div className="ccbhc-detail-label">Assigned</div>
@@ -1642,7 +1642,7 @@ function PAStatusDetail({ clientId, clinicianName, onBack }: { clientId: string;
             <div className="ccbhc-activity-timeline">
               {[
                 { date: 'May 11', text: 'PA submitted' },
-                { date: 'May 15', text: 'Under review (SoonerCare portal)' },
+                { date: 'May 15', text: 'Under review (Medicaid portal)' },
                 { date: 'May 22', text: 'No decision yet (day 11 of 15-day window)' },
               ].map((item, i) => (
                 <div key={i} className="ccbhc-activity-item">
@@ -1680,23 +1680,23 @@ function PAStatusDetail({ clientId, clinicianName, onBack }: { clientId: string;
             ))}
           </div>
           <div className="ccbhc-detail-value" style={{ fontSize: 12 }}>
-            SoonerCare standard review window is 15 business days. Day 14 of 15 — decision expected tomorrow.
+            Medicaid standard review window is 15 business days. Day 14 of 15 — decision expected tomorrow.
           </div>
           <div className="ccbhc-escalation-card">
             <div className="ccbhc-escalation-card__title">Escalation recommended</div>
-            <div className="ccbhc-escalation-card__text">If no decision by May 27, Eleos will auto-submit an expedite request to SoonerCare.</div>
+            <div className="ccbhc-escalation-card__text">If no decision by May 27, Eleos will auto-submit an expedite request to Medicaid.</div>
           </div>
           {!done ? (
             <>
               <div className="ccbhc-recommendation-card__actions">
                 <button className="ccbhc-primary-btn" onClick={() => setDone(true)}>Request expedited review now</button>
                 <button className="ccbhc-secondary-btn" onClick={() => setShowContact(s => !s)}>
-                  {showContact ? 'Hide contact info' : 'Contact SoonerCare provider line'}
+                  {showContact ? 'Hide contact info' : 'Contact Medicaid provider line'}
                 </button>
               </div>
               {showContact && (
                 <div className="ccbhc-meta-stat" style={{ marginTop: 10 }}>
-                  <div className="ccbhc-meta-stat__label">SoonerCare Provider Services</div>
+                  <div className="ccbhc-meta-stat__label">Medicaid Provider Services</div>
                   <div className="ccbhc-meta-stat__value">1-800-522-0114</div>
                   <div style={{ fontSize: 11, color: '#6b7280', marginTop: 4 }}>Mon–Fri 8 AM–5 PM CT · Reference PA-2026-10441</div>
                 </div>
@@ -1706,7 +1706,7 @@ function PAStatusDetail({ clientId, clinicianName, onBack }: { clientId: string;
             <div className="ccbhc-approved-state">
               <div className="ccbhc-approved-state__icon">✓</div>
               <div className="ccbhc-approved-state__title">Request submitted</div>
-              <div className="ccbhc-approved-state__desc">Expedite request submitted to SoonerCare portal.</div>
+              <div className="ccbhc-approved-state__desc">Expedite request submitted to Medicaid portal.</div>
               <button className="ccbhc-secondary-btn" onClick={() => setDone(false)}>Undo</button>
             </div>
           )}
@@ -1729,7 +1729,7 @@ function PAStatusDetail({ clientId, clinicianName, onBack }: { clientId: string;
           </div>
           <div className="ccbhc-meta-stat">
             <div className="ccbhc-meta-stat__label">Payer contact</div>
-            <div className="ccbhc-meta-stat__value" style={{ fontSize: 11, fontWeight: 500 }}>SoonerCare Provider Line{'\n'}1-800-522-0114</div>
+            <div className="ccbhc-meta-stat__value" style={{ fontSize: 11, fontWeight: 500 }}>Medicaid Provider Line{'\n'}1-800-522-0114</div>
           </div>
         </div>
       </div>
@@ -1742,7 +1742,7 @@ function PAStatusDetail({ clientId, clinicianName, onBack }: { clientId: string;
 function PAAppealDetail({ clientId, clinicianName, onBack }: { clientId: string; clinicianName: string; onBack: () => void }) {
   const [done, setDone] = useState(false);
   const [modifying, setModifying] = useState(false);
-  const defaultAppeal = `Client has CCBHC-qualifying diagnosis (F20.9 — Schizophrenia). Day services were delivered per documented treatment plan. Clinical necessity supported by treating clinician notes from May 6. SoonerCare policy §3.4.2 supports appeal for this service type.`;
+  const defaultAppeal = `Client has CCBHC-qualifying diagnosis (F20.9 — Schizophrenia). Day services were delivered per documented treatment plan. Clinical necessity supported by treating clinician notes from May 6. Medicaid policy §3.4.2 supports appeal for this service type.`;
   const [appealText, setAppealText] = useState(defaultAppeal);
 
   return (
@@ -1762,7 +1762,7 @@ function PAAppealDetail({ clientId, clinicianName, onBack }: { clientId: string;
             <span className="ccbhc-client-header__id">{clientId} — Appeal pending TSS review</span>
             <MedicaidPill status="At Risk" />
           </div>
-          <div className="ccbhc-client-header__meta">Pawnee County · Active Medicaid (SoonerCare)</div>
+          <div className="ccbhc-client-header__meta">Pawnee County · Active Medicaid (Medicaid)</div>
         </div>
       </div>
 
@@ -1772,7 +1772,7 @@ function PAAppealDetail({ clientId, clinicianName, onBack }: { clientId: string;
           <div className="ccbhc-triage-section-title">Client context</div>
           <div className="ccbhc-detail-group">
             <div className="ccbhc-detail-label">Insurance</div>
-            <div className="ccbhc-detail-value">Active Medicaid (SoonerCare) through Nov 2026</div>
+            <div className="ccbhc-detail-value">Active Medicaid (Medicaid) through Nov 2026</div>
           </div>
           <div className="ccbhc-detail-group">
             <div className="ccbhc-detail-label">Assigned</div>
@@ -1845,7 +1845,7 @@ function PAAppealDetail({ clientId, clinicianName, onBack }: { clientId: string;
                     <li>Client has CCBHC-qualifying diagnosis (F20.9 — Schizophrenia)</li>
                     <li>Day services delivered per documented treatment plan</li>
                     <li>Clinical necessity supported by treating clinician notes from May 6</li>
-                    <li>SoonerCare policy §3.4.2 supports appeal for this service type</li>
+                    <li>Medicaid policy §3.4.2 supports appeal for this service type</li>
                   </ul>
                   <div className="ccbhc-recommendation-card__actions" style={{ marginTop: 8 }}>
                     <button className="ccbhc-primary-btn" onClick={() => setDone(true)}>Approve and submit</button>
@@ -1858,7 +1858,7 @@ function PAAppealDetail({ clientId, clinicianName, onBack }: { clientId: string;
             <div className="ccbhc-approved-state">
               <div className="ccbhc-approved-state__icon">✓</div>
               <div className="ccbhc-approved-state__title">Appeal submitted</div>
-              <div className="ccbhc-approved-state__desc">Appeal submitted to SoonerCare portal. Reference #APL-2026-3847.</div>
+              <div className="ccbhc-approved-state__desc">Appeal submitted to Medicaid portal. Reference #APL-2026-3847.</div>
               <button className="ccbhc-secondary-btn" onClick={() => setDone(false)}>Undo</button>
             </div>
           )}
@@ -1876,7 +1876,7 @@ function PAAppealDetail({ clientId, clinicianName, onBack }: { clientId: string;
             <div className="ccbhc-meta-stat__value">74% approval rate</div>
           </div>
           <div className="ccbhc-alt-card" style={{ marginTop: 8 }}>
-            <div className="ccbhc-alt-card__title">Request peer-to-peer review with SoonerCare medical director</div>
+            <div className="ccbhc-alt-card__title">Request peer-to-peer review with Medicaid medical director</div>
             <div className="ccbhc-alt-card__reason">Alternative if appeal is denied</div>
           </div>
         </div>
