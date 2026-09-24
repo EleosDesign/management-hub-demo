@@ -2688,7 +2688,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                 <div style={{ position: 'absolute', left: 9, top: 22, bottom: 22, width: 2, background: '#c7d2fe', borderRadius: 2 }} />
                 {[
                   ...(resolved ? [{ date: TODAY, actor: 'Care team', event: 'Case marked resolved', detail: 'Address updated with DHS', type: 'flag' as const }] : []),
-                  ...(nextStepAction || (!done && phaseGoal && !phaseAction) ? [{ date: nextStepDate ? new Date(`${nextStepDate}T${nextStepTime || '09:00'}`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '', actor: assignedTo || assignedNavigator || '', event: nextStepAction || phaseGoal, detail: '', type: 'next-step' as const }] : []),
+                  ...(nextStepAction || (!done && phaseGoal && !phaseAction) ? [{ date: (() => { const d = nextStepDate || (pingDate ? addDaysTo(pingDate, 1) : ''); return d ? new Date(`${d}T${nextStepTime || '09:00'}`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : ''; })(), actor: assignedTo || assignedNavigator || '', event: nextStepAction || phaseGoal, detail: '', type: 'next-step' as const }] : []),
                   ...(!done ? [{ date: TODAY, actor: '', event: '', detail: '', type: 'today' as const }] : []),
                   ...(assignedNavigator ? [{ date: TODAY, actor: assignedNavigator, event: 'Navigator assigned', detail: assignedNavigator, type: 'outreach' as const }] : []),
                   ...phaseHistory.map(h => ({
