@@ -3244,10 +3244,24 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
 
                             {/* Action buttons */}
                             {workflowOutcome === 'escalate' && outcomeReason ? (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#fffbeb', border: '1.5px solid #fde68a', borderRadius: 8 }}>
-                                <span style={{ fontSize: 14 }}>⚠</span>
-                                <span style={{ fontSize: 13, color: '#92400e', fontWeight: 500 }}>Case escalated — awaiting supervisor review</span>
-                                <button style={{ marginLeft: 'auto', fontSize: 11, color: '#b45309', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 500 }} onClick={() => { setWorkflowOutcome(null); setOutcomeReason(''); setPingDate(''); }}>Clear</button>
+                              <div style={{ background: '#fffbeb', border: '1.5px solid #fde68a', borderRadius: 8, overflow: 'hidden' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px' }}>
+                                  <span style={{ fontSize: 14 }}>⚠</span>
+                                  <span style={{ fontSize: 13, color: '#92400e', fontWeight: 500 }}>Case escalated — awaiting supervisor review</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: 8, padding: '0 14px 12px' }}>
+                                  <button className="ccbhc-primary-btn" style={{ flex: 1, background: '#b45309', fontSize: 13 }} onClick={() => {
+                                    const completedPhase = PHASES[phaseIndex];
+                                    const actionEntry = { phase: completedPhase.id, label: completedPhase.label, action: phaseAction, note, date: TODAY, actor: assignedTo || assignedNavigator || undefined };
+                                    const outcomeEntry = { phase: 'outcome', label: 'Outcome', action: `Escalate — ${outcomeReason}`, note: note || '', date: TODAY, actor: assignedTo || assignedNavigator || undefined };
+                                    const newHistory = [outcomeEntry, actionEntry, ...phaseHistory.filter(h => !(h.phase === 'outcome' && h.action.startsWith('Escalate')))];
+                                    setPhaseHistory(newHistory);
+                                    setDone(true);
+                                    persist({ done: true, workflowOutcome, outcomeReason, phaseHistory: newHistory });
+                                    onStatusChange?.(clientId, 'Escalated to supervisor');
+                                  }}>Log escalation</button>
+                                  <button style={{ fontSize: 12, color: '#b45309', background: 'none', border: '1.5px solid #fde68a', borderRadius: 8, cursor: 'pointer', padding: '6px 12px', fontWeight: 500, fontFamily: 'inherit' }} onClick={() => { setWorkflowOutcome(null); setOutcomeReason(''); setPingDate(''); }}>Clear</button>
+                                </div>
                               </div>
                             ) : workflowOutcome ? (
                               <div style={{ display: 'flex', gap: 8 }}>
