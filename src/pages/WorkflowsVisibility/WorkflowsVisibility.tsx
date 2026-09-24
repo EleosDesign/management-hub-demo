@@ -2575,9 +2575,11 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
   const [scheduledTime, setScheduledTime] = useState(persistedState?.scheduledTime ?? '');
   const [callbackDate, setCallbackDate] = useState(persistedState?.callbackDate ?? '');
   const [callbackTime, setCallbackTime] = useState(persistedState?.callbackTime ?? '');
-  const [nextStepDate, setNextStepDate] = useState(persistedState?.nextStepDate ?? '');
-  const [nextStepTime, setNextStepTime] = useState(persistedState?.nextStepTime ?? '');
-  const [assignedTo, setAssignedTo] = useState(persistedState?.assignedTo ?? '');
+  const TOMORROW = (() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().split('T')[0]; })();
+  const NOW_TIME = (() => { const d = new Date(); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; })();
+  const [nextStepDate, setNextStepDate] = useState(persistedState?.nextStepDate ?? TOMORROW);
+  const [nextStepTime, setNextStepTime] = useState(persistedState?.nextStepTime ?? NOW_TIME);
+  const [assignedTo, setAssignedTo] = useState(persistedState?.assignedTo ?? 'Morgan Reyes (me)');
   const [requiredAction, setRequiredAction] = useState(persistedState?.requiredAction ?? '');
 
   const [assignedNavigator, setAssignedNavigator] = useState(persistedState?.assignedNavigator ?? '');
