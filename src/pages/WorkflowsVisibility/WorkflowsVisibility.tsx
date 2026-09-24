@@ -34,7 +34,8 @@ const STATUS_PARTS: Record<string, { label: string; variant: 'action' | 'outcome
   'Waiting on client to send documents':    [{ label: 'Blocked', variant: 'outcome' }, { label: 'Awaiting docs', variant: 'next' }],
   'Office visit scheduled':                 [{ label: 'Renewal in progress', variant: 'next' }, { label: 'Office visit scheduled', variant: 'outcome' }],
   'Called — DHS walkthrough done':          [{ label: 'Outreach', variant: 'action' }, { label: 'DHS walkthrough done', variant: 'outcome' }],
-  'Closed':                                 [{ label: 'Renewed', variant: 'resolved' }],
+  'Closed':                                 [{ label: 'Resolved', variant: 'resolved' }],
+  'Escalated to supervisor':                [{ label: 'Escalated', variant: 'outcome' }],
   // SOAR workflow statuses
   'Pre-Call — in progress':                 [{ label: 'Pre-Call', variant: 'action' }],
   'Contact — in progress':                  [{ label: 'Contact', variant: 'action' }],
@@ -73,7 +74,8 @@ type WorkflowStatus =
   | 'Waiting on client to send documents'
   | 'Office visit scheduled'
   | 'Called — DHS walkthrough done'
-  | 'Closed';
+  | 'Closed'
+  | 'Escalated to supervisor';
 
 interface Client {
   id: string;
@@ -818,7 +820,8 @@ const STATUS_INFO: Record<string, { last: string; next: string; days: number }> 
   'Flagged':                                  { last: 'Flagged by system',              next: 'Start workflow',               days: 0 },
   'Called — left voicemail':                  { last: 'Called — left voicemail',         next: 'Follow-up call',               days: 2 },
   'Called — no time to talk, call back':      { last: 'Called — no time to talk',        next: 'Call back',                    days: 1 },
-  'Unreachable':                              { last: 'Multiple attempts — unreachable',  next: 'Escalate or close',            days: 1 },
+  'Unreachable':                              { last: 'Multiple attempts — unreachable',  next: 'Escalate to supervisor',        days: 1 },
+  'Escalated to supervisor':                  { last: 'Escalated to supervisor',           next: '—',                            days: 0 },
   'Knows — will do it themselves':            { last: 'Client confirmed — self-managing', next: 'Confirm resolution',           days: 7 },
   'Wants help':                               { last: 'Client confirmed — wants help',    next: 'Schedule appointment',         days: 1 },
   'Claims renewed — not confirmed':           { last: 'Renewal submitted',                next: 'Confirm with state',           days: 5 },
@@ -2623,7 +2626,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
   // 4-phase workflow state (Marcus/Patricia)
   const [currentPhase, setCurrentPhase] = useState<'pre-call' | 'contact' | 'in-session' | 'post-submission'>(persistedState?.currentPhase ?? 'pre-call');
   const [phaseAction, setPhaseAction] = useState(persistedState?.phaseAction ?? '');
-  const [workflowOutcome, setWorkflowOutcome] = useState<'blocked' | 'waiting' | 'closed' | 'confirmed' | null>(persistedState?.workflowOutcome ?? null);
+  const [workflowOutcome, setWorkflowOutcome] = useState<'blocked' | 'waiting' | 'closed' | 'escalate' | 'confirmed' | null>(persistedState?.workflowOutcome ?? null);
   const [outcomeReason, setOutcomeReason] = useState(persistedState?.outcomeReason ?? '');
   const [pingDate, setPingDate] = useState(persistedState?.pingDate ?? '');
   const [showOutcomePanel, setShowOutcomePanel] = useState(false);
@@ -2660,6 +2663,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
       if (outcome === 'blocked') onStatusChange?.(clientId, 'Blocked');
       else if (outcome === 'waiting') onStatusChange?.(clientId, 'Waiting');
       else if (outcome === 'closed') onStatusChange?.(clientId, 'Closed');
+      else if (outcome === 'escalate') onStatusChange?.(clientId, 'Escalated to supervisor');
       else onStatusChange?.(clientId, `${phase.charAt(0).toUpperCase() + phase.slice(1).replace('-', ' ')} — in progress`);
       return;
     }
@@ -2947,10 +2951,15 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                   ];
 
                   const CLOSED_REASONS = [
-                    { label: 'Address updated — active status confirmed on Medicaid', terminal: false, escalate: false },
-                    { label: 'Client refused — no further outreach', terminal: true, escalate: true },
-                    { label: 'Client refused — client discontinuing services', terminal: true, escalate: true },
-                    { label: 'Unreachable — maximum attempts reached, escalated to supervisor', terminal: true, escalate: true },
+                    { label: 'Address updated in portal — active status confirmed on Medicaid' },
+                    { label: 'Client discharged from agency' },
+                    { label: 'Client moved to sliding scale — alternative payment confirmed' },
+                  ];
+
+                  const ESCALATE_REASONS = [
+                    { label: 'Client refused — no further outreach' },
+                    { label: 'Client refused — client discontinuing services' },
+                    { label: 'Unreachable — maximum attempts reached' },
                   ];
 
                   const addDays = (days: number) => {
@@ -3101,8 +3110,8 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                             {!isSchedulingAction && <div ref={outcomeRef} style={{ marginBottom: 12 }}>
                               <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 4 }}>Outcome</div>
                               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: workflowOutcome ? 10 : 0 }}>
-                                {(currentPhase === 'pre-call' ? ['confirmed', 'blocked', 'waiting', 'closed'] : ['blocked', 'waiting', 'closed'] as const).map((o: string) => {
-                                  const activeColor = o === 'blocked' ? '#b91c1c' : o === 'waiting' ? '#4f46e5' : o === 'confirmed' ? '#16a34a' : '#16a34a';
+                                {(currentPhase === 'pre-call' ? ['confirmed', 'blocked', 'waiting', 'closed', 'escalate'] : ['blocked', 'waiting', 'closed', 'escalate'] as const).map((o: string) => {
+                                  const activeColor = o === 'blocked' ? '#b91c1c' : o === 'waiting' ? '#4f46e5' : o === 'confirmed' ? '#16a34a' : o === 'escalate' ? '#b45309' : '#16a34a';
                                   const isActive = workflowOutcome === o;
                                   return <button key={o} onClick={() => { setWorkflowOutcome(isActive ? null : o as any); setOutcomeReason(''); setPingDate(''); }} style={{ ...selectBtn(o, isActive ? '#fff' : '#374151', isActive ? activeColor : '#e2e8f0', isActive ? activeColor : '#e2e8f0'), textTransform: 'capitalize' }}>{o}</button>;
                                 })}
@@ -3134,12 +3143,19 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                               )}
                               {workflowOutcome === 'closed' && (
                                 <div>
-                                  <select value={outcomeReason} onChange={e => { const r = e.target.value; setOutcomeReason(r); const match = CLOSED_REASONS.find(c => c.label === r); const pd = (match && match.terminal && !match.escalate) ? addDays(90) : ''; setPingDate(pd); persist({ outcomeReason: r, pingDate: pd }); }} style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid #e2e8f0', borderRadius: 8, padding: '7px 10px', fontSize: 13, color: outcomeReason ? '#1e293b' : '#94a3b8', outline: 'none', fontFamily: 'inherit', background: '#fff', appearance: 'none', cursor: 'pointer' }} onFocus={e => { e.target.style.borderColor = '#4f46e5'; e.target.style.boxShadow = '0 0 0 3px #eef2ff'; }} onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = 'none'; }}>
+                                  <select value={outcomeReason} onChange={e => { const r = e.target.value; setOutcomeReason(r); persist({ outcomeReason: r, pingDate: '' }); }} style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid #e2e8f0', borderRadius: 8, padding: '7px 10px', fontSize: 13, color: outcomeReason ? '#1e293b' : '#94a3b8', outline: 'none', fontFamily: 'inherit', background: '#fff', appearance: 'none', cursor: 'pointer' }} onFocus={e => { e.target.style.borderColor = '#4f46e5'; e.target.style.boxShadow = '0 0 0 3px #eef2ff'; }} onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = 'none'; }}>
                                     <option value="">Select reason…</option>
                                     {CLOSED_REASONS.map(c => <option key={c.label} value={c.label}>{c.label}</option>)}
                                   </select>
-                                  {pingDate && <div style={{ marginTop: 6, fontSize: 12, color: '#15803d' }}>3-month check-in: {new Date(pingDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>}
-                                  {outcomeReason && CLOSED_REASONS.find(c => c.label === outcomeReason)?.escalate && <div style={{ marginTop: 6, fontSize: 12, color: '#b45309', fontWeight: 500 }}>⚠ Escalate to supervisor before closing</div>}
+                                </div>
+                              )}
+                              {workflowOutcome === 'escalate' && (
+                                <div>
+                                  <select value={outcomeReason} onChange={e => { const r = e.target.value; setOutcomeReason(r); persist({ outcomeReason: r, pingDate: '' }); onStatusChange?.(clientId, 'Escalated to supervisor'); }} style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid #fde68a', borderRadius: 8, padding: '7px 10px', fontSize: 13, color: outcomeReason ? '#1e293b' : '#94a3b8', outline: 'none', fontFamily: 'inherit', background: '#fffbeb', appearance: 'none', cursor: 'pointer' }} onFocus={e => { e.target.style.borderColor = '#b45309'; e.target.style.boxShadow = '0 0 0 3px #fef3c7'; }} onBlur={e => { e.target.style.borderColor = '#fde68a'; e.target.style.boxShadow = 'none'; }}>
+                                    <option value="">Select reason…</option>
+                                    {ESCALATE_REASONS.map(r => <option key={r.label} value={r.label}>{r.label}</option>)}
+                                  </select>
+                                  {outcomeReason && <div style={{ marginTop: 6, fontSize: 12, color: '#b45309', fontWeight: 500 }}>⚠ Supervisor review required before this case can be closed</div>}
                                 </div>
                               )}
                             </div>}
