@@ -2735,10 +2735,13 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                 <div style={{ position: 'absolute', left: 9, top: 22, bottom: 22, width: 2, background: '#c7d2fe', borderRadius: 2 }} />
                 {[
                   ...(resolved ? [{ date: TODAY, actor: 'Care team', event: 'Case marked resolved', detail: 'Address updated with DHS', type: 'flag' as const }] : []),
+                  ...phaseHistory.filter(h => h.phase === 'outcome' && h.action.startsWith('Escalate')).map(h => ({
+                    date: h.date, actor: h.actor || assignedTo || 'Care team', event: h.action, detail: h.note || '', type: 'flag' as const,
+                  })),
                   ...(nextStepAction || (!done && phaseGoal && !phaseAction) ? [{ date: (() => { const d = nextStepDate || (pingDate ? addDaysTo(pingDate, 1) : ''); return d ? new Date(`${d}T${nextStepTime || '09:00'}`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : ''; })(), actor: assignedTo || assignedNavigator || '', event: nextStepAction || phaseGoal, detail: '', type: 'next-step' as const }] : []),
                   ...(!done ? [{ date: TODAY, actor: '', event: '', detail: '', type: 'today' as const }] : []),
                   ...(assignedNavigator ? [{ date: TODAY, actor: assignedNavigator, event: 'Navigator assigned', detail: assignedNavigator, type: 'outreach' as const }] : []),
-                  ...phaseHistory.map(h => ({
+                  ...phaseHistory.filter(h => !(h.phase === 'outcome' && h.action.startsWith('Escalate'))).map(h => ({
                     date: h.date,
                     actor: h.actor || assignedTo || 'Care team',
                     event: h.phase === 'outcome' ? h.action : `${h.label} — ${h.action}`,
@@ -2821,7 +2824,12 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
 
                   const isFlag = entry.type === 'flag';
                   const ev = entry.event.toLowerCase();
-                  const iconSvg = ev.includes('flag') || ev.includes('address')
+                  const isEscalate = ev.startsWith('escalate');
+                  const isConfirmed = ev === 'confirmed';
+                  const dotColor = isEscalate ? '#b45309' : (isFlag && !isConfirmed) ? '#f97316' : '#4338ca';
+                  const iconSvg = isEscalate
+                    ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    : ev.includes('flag') || ev.includes('address')
                     ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
                     : ev.includes('follow-up') || ev.includes('schedule')
                     ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -2839,9 +2847,9 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                       <div style={{
                         position: 'absolute', left: -21,
                         width: 10, height: 10, borderRadius: '50%',
-                        background: isFlag ? '#f97316' : '#4338ca',
+                        background: dotColor,
                         border: '2px solid #fff',
-                        boxShadow: `0 0 0 1.5px ${isFlag ? '#f97316' : '#4338ca'}`,
+                        boxShadow: `0 0 0 1.5px ${dotColor}`,
                         boxSizing: 'border-box',
                         zIndex: 1,
                       }} />
