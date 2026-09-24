@@ -943,33 +943,38 @@ function CaseloadView({ onClientClick, routedClients, clientStatuses }: { onClie
           const effectiveStatus = (client: { id: string; workflowStatus?: string }) =>
             (clientStatuses.get(client.id) ?? client.workflowStatus) as WorkflowStatus | undefined;
 
-          const STATUS_INFO: Record<string, { last: string; next: string }> = {
-            'Flagged':                                  { last: 'Flagged by system',              next: 'Start workflow' },
-            'Called — left voicemail':                  { last: 'Called — left voicemail',         next: 'Follow-up call' },
-            'Called — no time to talk, call back':      { last: 'Called — no time to talk',        next: 'Call back' },
-            'Unreachable':                              { last: 'Multiple attempts — unreachable',  next: 'Escalate or close' },
-            'Knows — will do it themselves':            { last: 'Client confirmed — self-managing', next: 'Confirm resolution' },
-            'Wants help':                               { last: 'Client confirmed — wants help',    next: 'Schedule appointment' },
-            'Claims renewed — not confirmed':           { last: 'Renewal submitted',                next: 'Confirm with state' },
-            'Needs appointment — CN / SDP / DHS':       { last: 'Appointment needed',               next: 'Schedule with CN / SDP / DHS' },
-            'Appointment scheduled':                    { last: 'Appointment scheduled',            next: 'Confirm attendance' },
-            'Needs the insurance hotline called':       { last: 'Hotline call needed',              next: 'Call insurance hotline' },
-            'Waiting on insurance decision':            { last: 'Request submitted',                next: 'Check decision status' },
-            'Denied — appeal or reapply':               { last: 'Claim denied',                     next: 'File appeal or reapply' },
-            'Confirmed by the state feed':              { last: 'Confirmed via state feed',         next: 'Close workflow' },
-            'Waiting on pay stubs':                     { last: 'Pay stubs requested',              next: 'Follow up on documents' },
-            'Waiting on Social Security award letter':  { last: 'SS award letter requested',        next: 'Follow up on letter' },
-            'Needs proof of address':                   { last: 'Address proof needed',             next: 'Collect proof of address' },
-            'Needs ID or birth certificate':            { last: 'ID / birth cert needed',           next: 'Collect ID or birth cert' },
-            'No email account':                         { last: 'No email on file',                 next: 'Set up email account' },
-            'No OHCA portal access':                    { last: 'No portal access',                 next: 'Set up OHCA portal access' },
-            'Needs transport to DHS':                   { last: 'Transport needed',                 next: 'Arrange DHS transport' },
-            'Waiting on client to send documents':      { last: 'Documents requested',              next: 'Follow up on documents' },
-            'Office visit scheduled':                   { last: 'Office visit scheduled',           next: 'Confirm attendance' },
-            'Called — DHS walkthrough done':            { last: 'DHS walkthrough completed',        next: 'Confirm enrollment' },
-            'Closed':                                   { last: 'Workflow closed',                  next: '—' },
+          const STATUS_INFO: Record<string, { last: string; next: string; days: number }> = {
+            'Flagged':                                  { last: 'Flagged by system',              next: 'Start workflow',               days: 0 },
+            'Called — left voicemail':                  { last: 'Called — left voicemail',         next: 'Follow-up call',               days: 2 },
+            'Called — no time to talk, call back':      { last: 'Called — no time to talk',        next: 'Call back',                    days: 1 },
+            'Unreachable':                              { last: 'Multiple attempts — unreachable',  next: 'Escalate or close',            days: 1 },
+            'Knows — will do it themselves':            { last: 'Client confirmed — self-managing', next: 'Confirm resolution',           days: 7 },
+            'Wants help':                               { last: 'Client confirmed — wants help',    next: 'Schedule appointment',         days: 1 },
+            'Claims renewed — not confirmed':           { last: 'Renewal submitted',                next: 'Confirm with state',           days: 5 },
+            'Needs appointment — CN / SDP / DHS':       { last: 'Appointment needed',               next: 'Schedule with CN / SDP / DHS', days: 2 },
+            'Appointment scheduled':                    { last: 'Appointment scheduled',            next: 'Confirm attendance',           days: 3 },
+            'Needs the insurance hotline called':       { last: 'Hotline call needed',              next: 'Call insurance hotline',       days: 1 },
+            'Waiting on insurance decision':            { last: 'Request submitted',                next: 'Check decision status',        days: 7 },
+            'Denied — appeal or reapply':               { last: 'Claim denied',                     next: 'File appeal or reapply',       days: 3 },
+            'Confirmed by the state feed':              { last: 'Confirmed via state feed',         next: 'Close workflow',               days: 1 },
+            'Waiting on pay stubs':                     { last: 'Pay stubs requested',              next: 'Follow up on documents',       days: 5 },
+            'Waiting on Social Security award letter':  { last: 'SS award letter requested',        next: 'Follow up on letter',          days: 7 },
+            'Needs proof of address':                   { last: 'Address proof needed',             next: 'Collect proof of address',     days: 3 },
+            'Needs ID or birth certificate':            { last: 'ID / birth cert needed',           next: 'Collect ID or birth cert',     days: 3 },
+            'No email account':                         { last: 'No email on file',                 next: 'Set up email account',         days: 2 },
+            'No OHCA portal access':                    { last: 'No portal access',                 next: 'Set up OHCA portal access',    days: 2 },
+            'Needs transport to DHS':                   { last: 'Transport needed',                 next: 'Arrange DHS transport',        days: 3 },
+            'Waiting on client to send documents':      { last: 'Documents requested',              next: 'Follow up on documents',       days: 5 },
+            'Office visit scheduled':                   { last: 'Office visit scheduled',           next: 'Confirm attendance',           days: 3 },
+            'Called — DHS walkthrough done':            { last: 'DHS walkthrough completed',        next: 'Confirm enrollment',           days: 2 },
+            'Closed':                                   { last: 'Workflow closed',                  next: '—',                            days: 0 },
           };
-          const getStatusInfo = (ws: string | undefined) => STATUS_INFO[ws ?? 'Flagged'] ?? { last: ws ?? 'Flagged', next: '—' };
+          const nextStepDate = (days: number) => {
+            const d = new Date('2026-09-24');
+            d.setDate(d.getDate() + days);
+            return days === 0 ? 'Today' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          };
+          const getStatusInfo = (ws: string | undefined) => STATUS_INFO[ws ?? 'Flagged'] ?? { last: ws ?? 'Flagged', next: '—', days: 0 };
           const unsortedRows = [...notTriggeredRows, ...triggeredRows];
           const allRows = [...unsortedRows].sort((a, b) => {
             const dir = flaggedSort.dir === 'asc' ? 1 : -1;
@@ -1089,7 +1094,7 @@ function CaseloadView({ onClientClick, routedClients, clientStatuses }: { onClie
                               return (
                                 <div style={{ lineHeight: 1.5 }}>
                                   <div style={{ fontSize: 12, color: '#1e293b', fontWeight: 500 }}>{info.next}</div>
-                                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 1 }}>{clinician.name.split(' ')[0]}</div>
+                                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 1 }}>{clinician.name.split(' ')[0]} · {nextStepDate(info.days)}</div>
                                 </div>
                               );
                             })()}
