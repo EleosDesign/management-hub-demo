@@ -12,6 +12,7 @@ import {
   ChevronDownIcon,
   ChevronLeftIcon,
   EleosLogoMark,
+  EyeIcon,
 } from '../icons';
 import './Sidebar.css';
 
@@ -75,6 +76,12 @@ const navItems: NavItem[] = [
     icon: <TargetIcon color="white" />,
     path: '/ccbhc-tracker',
   },
+  {
+    id: 'workflows-visibility',
+    label: 'Workflows Visibility',
+    icon: <EyeIcon color="white" />,
+    path: '/workflows-visibility',
+  },
 ];
 
 export function Sidebar() {
@@ -83,7 +90,7 @@ export function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const COLLAPSED_PREFIXES = ['/leadership-report', '/compliance-report', '/review-rulings', '/eligibility-report', '/ccbhc-tracker', '/workflows'];
+  const COLLAPSED_PREFIXES = ['/leadership-report', '/compliance-report', '/review-rulings', '/eligibility-report', '/ccbhc-tracker', '/workflows', '/workflows-visibility'];
 
   useEffect(() => {
     if (COLLAPSED_PREFIXES.some(prefix => location.pathname.startsWith(prefix))) {

@@ -7,6 +7,7 @@ import { LeadershipReport } from './pages/Reports/LeadershipReport';
 import { ComplianceReport } from './pages/Reports/ComplianceReport';
 import { EligibilityReport } from './pages/Reports/EligibilityReport';
 import CCBHCTracker from './pages/CCBHCTracker/CCBHCTracker';
+import WorkflowsVisibility from './pages/WorkflowsVisibility/WorkflowsVisibility';
 import { NoteTypesPage } from './pages/NoteTypes/NoteTypesPage';
 import './styles/globals.css';
 import './App.css';
@@ -19,7 +20,8 @@ const RunningWorkflows = lazy(() => import('./components/RunningWorkflows/Runnin
 function AppContent() {
   const location = useLocation();
   const isFullHeight = location.pathname !== '/workflows'
-    && location.pathname.startsWith('/workflows');
+    && location.pathname.startsWith('/workflows/')
+    && !location.pathname.startsWith('/workflows-visibility');
   return (
     <div className={`app-content${isFullHeight ? ' app-content--full-height' : ''}`}>
       <Suspense fallback={<div style={{ padding: 32 }}>Loading…</div>}>
@@ -32,6 +34,7 @@ function AppContent() {
           <Route path="/review-rulings" element={<RunningWorkflows />} />
           <Route path="/eligibility-report" element={<EligibilityReport />} />
           <Route path="/ccbhc-tracker" element={<CCBHCTracker />} />
+          <Route path="/workflows-visibility" element={<WorkflowsVisibility />} />
           <Route path="/note-types" element={<NoteTypesPage />} />
           <Route path="/workflows" element={<WorkflowRegistry />} />
           <Route path="/workflows/new" element={<CreateWorkflow />} />
