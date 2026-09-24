@@ -942,6 +942,34 @@ function CaseloadView({ onClientClick, routedClients, clientStatuses }: { onClie
           );
           const effectiveStatus = (client: { id: string; workflowStatus?: string }) =>
             (clientStatuses.get(client.id) ?? client.workflowStatus) as WorkflowStatus | undefined;
+
+          const STATUS_INFO: Record<string, { last: string; next: string }> = {
+            'Flagged':                                  { last: 'Flagged by system',              next: 'Start workflow' },
+            'Called — left voicemail':                  { last: 'Called — left voicemail',         next: 'Follow-up call' },
+            'Called — no time to talk, call back':      { last: 'Called — no time to talk',        next: 'Call back' },
+            'Unreachable':                              { last: 'Multiple attempts — unreachable',  next: 'Escalate or close' },
+            'Knows — will do it themselves':            { last: 'Client confirmed — self-managing', next: 'Confirm resolution' },
+            'Wants help':                               { last: 'Client confirmed — wants help',    next: 'Schedule appointment' },
+            'Claims renewed — not confirmed':           { last: 'Renewal submitted',                next: 'Confirm with state' },
+            'Needs appointment — CN / SDP / DHS':       { last: 'Appointment needed',               next: 'Schedule with CN / SDP / DHS' },
+            'Appointment scheduled':                    { last: 'Appointment scheduled',            next: 'Confirm attendance' },
+            'Needs the insurance hotline called':       { last: 'Hotline call needed',              next: 'Call insurance hotline' },
+            'Waiting on insurance decision':            { last: 'Request submitted',                next: 'Check decision status' },
+            'Denied — appeal or reapply':               { last: 'Claim denied',                     next: 'File appeal or reapply' },
+            'Confirmed by the state feed':              { last: 'Confirmed via state feed',         next: 'Close workflow' },
+            'Waiting on pay stubs':                     { last: 'Pay stubs requested',              next: 'Follow up on documents' },
+            'Waiting on Social Security award letter':  { last: 'SS award letter requested',        next: 'Follow up on letter' },
+            'Needs proof of address':                   { last: 'Address proof needed',             next: 'Collect proof of address' },
+            'Needs ID or birth certificate':            { last: 'ID / birth cert needed',           next: 'Collect ID or birth cert' },
+            'No email account':                         { last: 'No email on file',                 next: 'Set up email account' },
+            'No OHCA portal access':                    { last: 'No portal access',                 next: 'Set up OHCA portal access' },
+            'Needs transport to DHS':                   { last: 'Transport needed',                 next: 'Arrange DHS transport' },
+            'Waiting on client to send documents':      { last: 'Documents requested',              next: 'Follow up on documents' },
+            'Office visit scheduled':                   { last: 'Office visit scheduled',           next: 'Confirm attendance' },
+            'Called — DHS walkthrough done':            { last: 'DHS walkthrough completed',        next: 'Confirm enrollment' },
+            'Closed':                                   { last: 'Workflow closed',                  next: '—' },
+          };
+          const getStatusInfo = (ws: string | undefined) => STATUS_INFO[ws ?? 'Flagged'] ?? { last: ws ?? 'Flagged', next: '—' };
           const unsortedRows = [...notTriggeredRows, ...triggeredRows];
           const allRows = [...unsortedRows].sort((a, b) => {
             const dir = flaggedSort.dir === 'asc' ? 1 : -1;
@@ -1042,15 +1070,22 @@ function CaseloadView({ onClientClick, routedClients, clientStatuses }: { onClie
                           <td>
                             <span className="ccbhc-table__team">{clinician.name}</span><br /><span className="ccbhc-provider-cred">{{ LCSW: 'Care Coordinator', LPC: 'Case Manager', SDP: 'Care Coordinator', BHC: 'Case Manager' }[clinician.credential] ?? clinician.credential}</span>
                           </td>
-                          <td className="ccbhc-table__risk">{primaryReason}</td>
+                          <td className="ccbhc-table__risk">{primaryReason.split(' — ')[0]}</td>
                           <td>{client.lastServiceDate}</td>
                           <td>{client.treatmentPlanEnd}</td>
                           <td>
-                            <div className="ccbhc-wf-status-parts">
-                              {(STATUS_PARTS[effectiveStatus(client) ?? 'Flagged'] ?? STATUS_PARTS['Flagged']).map((part, pi) => (
-                                <span key={pi} className={`ccbhc-wf-part ccbhc-wf-part--${part.variant}`}>{part.label}</span>
-                              ))}
-                            </div>
+                            {(() => {
+                              const ws = effectiveStatus(client);
+                              const info = getStatusInfo(ws);
+                              return (
+                                <div style={{ lineHeight: 1.4 }}>
+                                  <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>{info.last}</div>
+                                  <div style={{ fontSize: 12, color: '#1e293b', fontWeight: 500 }}>
+                                    <span style={{ color: '#94a3b8', fontWeight: 400 }}>{clinician.name.split(' ')[0]}: </span>{info.next}
+                                  </div>
+                                </div>
+                              );
+                            })()}
                           </td>
                         </tr>
                       ))}
