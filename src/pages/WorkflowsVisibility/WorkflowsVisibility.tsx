@@ -2907,7 +2907,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                   <div className="ccbhc-diagnosis-card__reasoning">
                     <div className="ccbhc-reasoning-title">Reasoning</div>
                     <ul className="ccbhc-reasoning-list">
-                      <li>Client's address on file does not match current residence</li>
+                      <li>Client reported in session that their address has changed</li>
                       <li>State terms require Medicaid members to keep address current</li>
                       <li>Redetermination notices are mailed to the address on record — incorrect address risks missed renewal</li>
                     </ul>
@@ -2925,8 +2925,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
 
                   const PHASE_ACTIONS: Record<string, string[]> = {
                     'pre-call': [
-                      'Confirm benefit end date from PICIS',
-                      'Confirm client contact information is current',
+                      'Confirmed correct contact information and assisted client in updating it with Medicaid',
                     ],
                     'contact': [
                       'Called client — walked through portal together',
@@ -3244,12 +3243,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
 
                             {/* Action buttons */}
                             {workflowOutcome === 'escalate' && outcomeReason ? (
-                              <div style={{ background: '#fffbeb', border: '1.5px solid #fde68a', borderRadius: 8, overflow: 'hidden' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px' }}>
-                                  <span style={{ fontSize: 14 }}>⚠</span>
-                                  <span style={{ fontSize: 13, color: '#92400e', fontWeight: 500 }}>Case escalated — awaiting supervisor review</span>
-                                </div>
-                                <div style={{ display: 'flex', gap: 8, padding: '0 14px 12px' }}>
+                              <div style={{ display: 'flex', gap: 8 }}>
                                   <button className="ccbhc-primary-btn" style={{ flex: 1, background: '#b45309', fontSize: 13 }} onClick={() => {
                                     const completedPhase = PHASES[phaseIndex];
                                     const actionEntry = { phase: completedPhase.id, label: completedPhase.label, action: phaseAction, note, date: TODAY, actor: assignedTo || assignedNavigator || undefined };
@@ -3260,8 +3254,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                                     persist({ done: true, workflowOutcome, outcomeReason, phaseHistory: newHistory });
                                     onStatusChange?.(clientId, 'Escalated to supervisor');
                                   }}>Log escalation</button>
-                                  <button style={{ fontSize: 12, color: '#b45309', background: 'none', border: '1.5px solid #fde68a', borderRadius: 8, cursor: 'pointer', padding: '6px 12px', fontWeight: 500, fontFamily: 'inherit' }} onClick={() => { setWorkflowOutcome(null); setOutcomeReason(''); setPingDate(''); }}>Clear</button>
-                                </div>
+                                  <button style={{ fontSize: 12, color: '#475569', background: 'none', border: '1.5px solid #e2e8f0', borderRadius: 8, cursor: 'pointer', padding: '6px 12px', fontWeight: 500, fontFamily: 'inherit' }} onClick={() => { setWorkflowOutcome(null); setOutcomeReason(''); setPingDate(''); }}>Clear</button>
                               </div>
                             ) : workflowOutcome ? (
                               <div style={{ display: 'flex', gap: 8 }}>
