@@ -1120,65 +1120,54 @@ function CaseloadView({ onClientClick, routedClients, clientStatuses }: { onClie
         })()}
       </div>
 
-      {/* Right rail */}
-      <aside className="ccbhc-rail">
-        <div className="ccbhc-rail__header">
-          Real-time alerts
-          <span className="ccbhc-rail__count">{REAL_TIME_ALERTS.length - dismissedAlerts.size}</span>
-        </div>
-
-        <div className="ccbhc-alerts-scroll">
-          {REAL_TIME_ALERTS.filter((_, i) => !dismissedAlerts.has(i)).map((a, i) => (
-            <div key={i} className="ccbhc-alert">
-              <div className="ccbhc-alert__icon">{a.icon}</div>
-              <div className="ccbhc-alert__body">
-                <div className="ccbhc-alert__header-row">
-                  <div className="ccbhc-alert__title">{a.title}</div>
-                  <button
-                    className="ccbhc-alert__dismiss"
-                    onClick={() => setDismissedAlerts(s => new Set([...s, REAL_TIME_ALERTS.indexOf(a)]))}
-                    aria-label="Dismiss"
-                  >×</button>
-                </div>
-                <span className="ccbhc-alert__time">{a.time}</span>
-                <div className="ccbhc-alert__desc">{a.desc}</div>
-                {a.statusType !== 'running' && (
-                  <div className="ccbhc-alert__footer">
-                    <span className={a.statusType === 'running' ? 'ccbhc-status-running' : 'ccbhc-status-done'}>
-                      {a.status}
-                    </span>
+      {/* Right rail — My To-Do */}
+      {(() => {
+        const me = CLINICIANS[0]; // Morgan Reyes — current user
+        const myClients = [...me.notTriggered, ...me.triggered]
+          .filter(cl => !routedClients.has(cl.id))
+          .map(cl => {
+            const ws = clientStatuses.get(cl.id) ?? cl.workflowStatus ?? 'Flagged';
+            const info = getStatusInfo(ws);
+            return { cl, ws, info };
+          })
+          .sort((a, b) => a.info.days - b.info.days);
+        return (
+          <aside className="ccbhc-rail">
+            <div className="ccbhc-rail__header">
+              My to-do
+              <span className="ccbhc-rail__count">{myClients.length}</span>
+            </div>
+            <div className="ccbhc-alerts-scroll">
+              {myClients.map(({ cl, info }, i) => (
+                <div key={i} className="ccbhc-alert" style={{ cursor: 'pointer' }} onClick={() => onClientClick(cl.id)}>
+                  <div className="ccbhc-alert__body" style={{ width: '100%' }}>
+                    <div className="ccbhc-alert__header-row">
+                      <div className="ccbhc-alert__title" style={{ fontSize: 13 }}>{cl.id}</div>
+                      <span style={{ fontSize: 11, color: info.days === 0 ? '#dc2626' : info.days <= 2 ? '#d97706' : '#64748b', fontWeight: 500 }}>
+                        {nextStepDate(info.days)}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>{info.next}</div>
                   </div>
-                )}
-                {a.cta && (() => {
-                  const clientMatch = a.title.match(/CL-\d+/);
-                  const clientId = clientMatch ? clientMatch[0] : null;
-                  return (
-                    <button
-                      className="ccbhc-alert__cta"
-                      onClick={clientId ? () => onClientClick(clientId) : undefined}
-                    >{a.cta}</button>
-                  );
-                })()}
-              </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-
-        <div className="ccbhc-rail__divider" />
-        <div className="ccbhc-rail__header">Activity today</div>
-        <div className="ccbhc-feed">
-          {ACTIVITY_FEED.map((item, i) => (
-            <div key={i} className="ccbhc-feed-item">
-              <div className="ccbhc-feed-item__time">{item.time}</div>
-              <div className="ccbhc-feed-item__body">
-                <ActivityIcon type={item.type} />
-                <span>{item.text}</span>
-              </div>
+            <div className="ccbhc-rail__divider" />
+            <div className="ccbhc-rail__header">Activity today</div>
+            <div className="ccbhc-feed">
+              {ACTIVITY_FEED.map((item, i) => (
+                <div key={i} className="ccbhc-feed-item">
+                  <div className="ccbhc-feed-item__time">{item.time}</div>
+                  <div className="ccbhc-feed-item__body">
+                    <ActivityIcon type={item.type} />
+                    <span>{item.text}</span>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-
-      </aside>
+          </aside>
+        );
+      })()}
     </div>
   );
 }
@@ -1369,65 +1358,54 @@ function OrgView({ onClientClick }: { onClientClick: (id: string, clinician: str
         </div>
       </div>
 
-      {/* Right rail */}
-      <aside className="ccbhc-rail">
-        <div className="ccbhc-rail__header">
-          Real-time alerts
-          <span className="ccbhc-rail__count">{REAL_TIME_ALERTS.length - dismissedAlerts.size}</span>
-        </div>
-
-        <div className="ccbhc-alerts-scroll">
-          {REAL_TIME_ALERTS.filter((_, i) => !dismissedAlerts.has(i)).map((a, i) => (
-            <div key={i} className="ccbhc-alert">
-              <div className="ccbhc-alert__icon">{a.icon}</div>
-              <div className="ccbhc-alert__body">
-                <div className="ccbhc-alert__header-row">
-                  <div className="ccbhc-alert__title">{a.title}</div>
-                  <button
-                    className="ccbhc-alert__dismiss"
-                    onClick={() => setDismissedAlerts(s => new Set([...s, REAL_TIME_ALERTS.indexOf(a)]))}
-                    aria-label="Dismiss"
-                  >×</button>
-                </div>
-                <span className="ccbhc-alert__time">{a.time}</span>
-                <div className="ccbhc-alert__desc">{a.desc}</div>
-                {a.statusType !== 'running' && (
-                  <div className="ccbhc-alert__footer">
-                    <span className={a.statusType === 'running' ? 'ccbhc-status-running' : 'ccbhc-status-done'}>
-                      {a.status}
-                    </span>
+      {/* Right rail — My To-Do */}
+      {(() => {
+        const me = CLINICIANS[0]; // Morgan Reyes — current user
+        const myClients = [...me.notTriggered, ...me.triggered]
+          .filter(cl => !routedClients.has(cl.id))
+          .map(cl => {
+            const ws = clientStatuses.get(cl.id) ?? cl.workflowStatus ?? 'Flagged';
+            const info = getStatusInfo(ws);
+            return { cl, ws, info };
+          })
+          .sort((a, b) => a.info.days - b.info.days);
+        return (
+          <aside className="ccbhc-rail">
+            <div className="ccbhc-rail__header">
+              My to-do
+              <span className="ccbhc-rail__count">{myClients.length}</span>
+            </div>
+            <div className="ccbhc-alerts-scroll">
+              {myClients.map(({ cl, info }, i) => (
+                <div key={i} className="ccbhc-alert" style={{ cursor: 'pointer' }} onClick={() => onClientClick(cl.id, me.name)}>
+                  <div className="ccbhc-alert__body" style={{ width: '100%' }}>
+                    <div className="ccbhc-alert__header-row">
+                      <div className="ccbhc-alert__title" style={{ fontSize: 13 }}>{cl.id}</div>
+                      <span style={{ fontSize: 11, color: info.days === 0 ? '#dc2626' : info.days <= 2 ? '#d97706' : '#64748b', fontWeight: 500 }}>
+                        {nextStepDate(info.days)}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>{info.next}</div>
                   </div>
-                )}
-                {a.cta && (() => {
-                  const clientMatch = a.title.match(/CL-\d+/);
-                  const clientId = clientMatch ? clientMatch[0] : null;
-                  return (
-                    <button
-                      className="ccbhc-alert__cta"
-                      onClick={clientId ? () => onClientClick(clientId, ORG_CLIENT_CLINICIAN[clientId] ?? CLINICIANS[0].name) : undefined}
-                    >{a.cta}</button>
-                  );
-                })()}
-              </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-
-        <div className="ccbhc-rail__divider" />
-        <div className="ccbhc-rail__header">Activity today</div>
-        <div className="ccbhc-feed">
-          {ACTIVITY_FEED.map((item, i) => (
-            <div key={i} className="ccbhc-feed-item">
-              <div className="ccbhc-feed-item__time">{item.time}</div>
-              <div className="ccbhc-feed-item__body">
-                <ActivityIcon type={item.type} />
-                <span>{item.text}</span>
-              </div>
+            <div className="ccbhc-rail__divider" />
+            <div className="ccbhc-rail__header">Activity today</div>
+            <div className="ccbhc-feed">
+              {ACTIVITY_FEED.map((item, i) => (
+                <div key={i} className="ccbhc-feed-item">
+                  <div className="ccbhc-feed-item__time">{item.time}</div>
+                  <div className="ccbhc-feed-item__body">
+                    <ActivityIcon type={item.type} />
+                    <span>{item.text}</span>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-
-      </aside>
+          </aside>
+        );
+      })()}
     </div>
   );
 }
