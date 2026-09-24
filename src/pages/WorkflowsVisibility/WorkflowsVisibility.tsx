@@ -2916,10 +2916,10 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                   ];
 
                   const CLOSED_REASONS = [
-                    { label: 'Address updated — active status confirmed on Medicaid', terminal: false },
-                    { label: 'Client refused — no further outreach', terminal: true },
-                    { label: 'Client refused — client discontinuing services', terminal: true },
-                    { label: 'Unreachable — maximum attempts reached, escalated to supervisor', terminal: true },
+                    { label: 'Address updated — active status confirmed on Medicaid', terminal: false, escalate: false },
+                    { label: 'Client refused — no further outreach', terminal: true, escalate: true },
+                    { label: 'Client refused — client discontinuing services', terminal: true, escalate: true },
+                    { label: 'Unreachable — maximum attempts reached, escalated to supervisor', terminal: true, escalate: true },
                   ];
 
                   const addDays = (days: number) => {
@@ -3103,11 +3103,12 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                               )}
                               {workflowOutcome === 'closed' && (
                                 <div>
-                                  <select value={outcomeReason} onChange={e => { const r = e.target.value; setOutcomeReason(r); const match = CLOSED_REASONS.find(c => c.label === r); if (match && match.terminal) setPingDate(addDays(90)); else setPingDate(''); persist({ outcomeReason: r, pingDate: match && match.terminal ? addDays(90) : '' }); }} style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid #e2e8f0', borderRadius: 8, padding: '7px 10px', fontSize: 13, color: outcomeReason ? '#1e293b' : '#94a3b8', outline: 'none', fontFamily: 'inherit', background: '#fff', appearance: 'none', cursor: 'pointer' }} onFocus={e => { e.target.style.borderColor = '#4f46e5'; e.target.style.boxShadow = '0 0 0 3px #eef2ff'; }} onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = 'none'; }}>
+                                  <select value={outcomeReason} onChange={e => { const r = e.target.value; setOutcomeReason(r); const match = CLOSED_REASONS.find(c => c.label === r); const pd = (match && match.terminal && !match.escalate) ? addDays(90) : ''; setPingDate(pd); persist({ outcomeReason: r, pingDate: pd }); }} style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid #e2e8f0', borderRadius: 8, padding: '7px 10px', fontSize: 13, color: outcomeReason ? '#1e293b' : '#94a3b8', outline: 'none', fontFamily: 'inherit', background: '#fff', appearance: 'none', cursor: 'pointer' }} onFocus={e => { e.target.style.borderColor = '#4f46e5'; e.target.style.boxShadow = '0 0 0 3px #eef2ff'; }} onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = 'none'; }}>
                                     <option value="">Select reason…</option>
                                     {CLOSED_REASONS.map(c => <option key={c.label} value={c.label}>{c.label}</option>)}
                                   </select>
                                   {pingDate && <div style={{ marginTop: 6, fontSize: 12, color: '#15803d' }}>3-month check-in: {new Date(pingDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>}
+                                  {outcomeReason && CLOSED_REASONS.find(c => c.label === outcomeReason)?.escalate && <div style={{ marginTop: 6, fontSize: 12, color: '#b45309', fontWeight: 500 }}>⚠ Escalate to supervisor before closing</div>}
                                 </div>
                               )}
                             </div>}
