@@ -3271,6 +3271,8 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                   ? `A call attempt was made but ${CLIENT_NAMES[clientId] ?? 'the client'} didn't answer. A voicemail was left. ${assignedNavigator ? `${assignedNavigator}` : 'The assigned navigator'} needs to follow up — the address update with DHS is still pending.`
                   : assignedNavigator
                   ? `${assignedNavigator} is assigned to contact ${CLIENT_NAMES[clientId] ?? 'this client'} and guide them through updating their address with DHS. All team members seeing this client are aware — any one of them can close this workflow once the update is confirmed.`
+                  : phaseHistory.length > 0
+                  ? `Actions have been logged for this client. The address update with DHS is still pending — the assigned care navigator needs to confirm completion.`
                   : `This client needs to update their address with DHS before their Medicaid redetermination. No action has been logged yet — the assigned care navigator needs to make contact and confirm the update.`
                 }
               </div>
