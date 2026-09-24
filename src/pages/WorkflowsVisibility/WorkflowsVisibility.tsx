@@ -35,6 +35,16 @@ const STATUS_PARTS: Record<string, { label: string; variant: 'action' | 'outcome
   'Office visit scheduled':                 [{ label: 'Renewal in progress', variant: 'next' }, { label: 'Office visit scheduled', variant: 'outcome' }],
   'Called — DHS walkthrough done':          [{ label: 'Outreach', variant: 'action' }, { label: 'DHS walkthrough done', variant: 'outcome' }],
   'Closed':                                 [{ label: 'Renewed', variant: 'resolved' }],
+  // SOAR workflow statuses
+  'Pre-Call — in progress':                 [{ label: 'Pre-Call', variant: 'action' }],
+  'Contact — in progress':                  [{ label: 'Contact', variant: 'action' }],
+  'In Session — in progress':               [{ label: 'In Session', variant: 'action' }],
+  'Post-Submission — in progress':          [{ label: 'Post-Submission', variant: 'action' }],
+  'Waiting':                                [{ label: 'Waiting', variant: 'outcome' }],
+  'Blocked':                                [{ label: 'Blocked', variant: 'outcome' }],
+  'Confirmed':                              [{ label: 'Confirmed', variant: 'resolved' }],
+  'Navigator assigned':                     [{ label: 'Navigator assigned', variant: 'next' }],
+  'In progress':                            [{ label: 'In progress', variant: 'action' }],
 };
 
 type MedicaidStatus = 'Active' | 'At Risk' | 'Lost';
