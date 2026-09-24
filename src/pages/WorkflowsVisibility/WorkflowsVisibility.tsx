@@ -2745,13 +2745,13 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                         }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                             {/* Arrow-right icon for next step */}
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                            <div style={{ fontSize: 12, fontWeight: 500, color: '#6366f1', flex: 1 }}>{entry.event}</div>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4338ca" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: '#1e1b4b', flex: 1 }}>{entry.event}</div>
                             {entry.actor && (
                               <div style={{
-                                fontSize: 10.5, fontWeight: 500,
-                                color: '#6366f1',
-                                background: '#eef2ff',
+                                fontSize: 10.5, fontWeight: 600,
+                                color: '#3730a3',
+                                background: '#c7d2fe',
                                 borderRadius: 6,
                                 padding: '2px 8px',
                                 whiteSpace: 'nowrap',
@@ -2760,8 +2760,8 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                             )}
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 3, paddingLeft: 22 }}>
-                            <div style={{ fontSize: 10.5, color: '#a5b4fc' }}>Next step — assigned</div>
-                            {entry.date && <div style={{ fontSize: 11, color: '#6366f1', fontWeight: 500 }}>{entry.date}</div>}
+                            <div style={{ fontSize: 10.5, color: '#6366f1', fontWeight: 500 }}>Next step — assigned</div>
+                            {entry.date && <div style={{ fontSize: 11, color: '#1e1b4b', fontWeight: 600 }}>{entry.date}</div>}
                           </div>
                         </div>
                       </div>
