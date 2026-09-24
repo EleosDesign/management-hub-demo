@@ -2925,6 +2925,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
 
                   const PHASE_ACTIONS: Record<string, string[]> = {
                     'pre-call': [
+                      'Confirm benefit end date',
                       'Confirmed correct contact information and assisted client in updating it with Medicaid',
                     ],
                     'contact': [
@@ -2936,6 +2937,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                       'Assisted client with portal login / password reset',
                       'Walked client through address update',
                       'Confirmed address update was submitted',
+                      'Submit application — verbal authorization confirmed',
                     ],
                     'post-submission': [
                       'Verify address update in Medicaid system',
