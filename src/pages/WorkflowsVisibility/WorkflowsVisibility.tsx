@@ -3171,7 +3171,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                             </div>}
 
                             {/* Assign next step to — shown after outcome selected (reason required for blocked/waiting/closed) */}
-                            {(outcomeReason || workflowOutcome === 'confirmed' || isSchedulingAction) && workflowOutcome !== 'escalate' && <div style={{ marginBottom: 12 }}>
+                            {(outcomeReason || workflowOutcome === 'confirmed' || isSchedulingAction) && workflowOutcome !== 'escalate' && workflowOutcome !== 'closed' && <div style={{ marginBottom: 12 }}>
                               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
                                 <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>Assign next step to</div>
                                 {assignedTo !== clinicianName && (
