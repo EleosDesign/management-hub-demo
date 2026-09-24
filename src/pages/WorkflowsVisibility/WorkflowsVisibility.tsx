@@ -2692,7 +2692,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                     detail: h.note || '',
                     type: h.phase === 'outcome' ? 'flag' as const : 'outreach' as const,
                   })),
-                  ...(!done && nextStepAction ? [{ date: '', actor: assignedTo || assignedNavigator || '', event: nextStepAction, detail: '', type: 'next-step' as const }] : []),
+                  ...(!done && nextStepAction ? [{ date: nextStepDate ? new Date(`${nextStepDate}T${nextStepTime || '09:00'}`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '', actor: assignedTo || assignedNavigator || '', event: nextStepAction, detail: '', type: 'next-step' as const }] : []),
                   ...(!done ? [{ date: TODAY, actor: '', event: '', detail: '', type: 'today' as const }] : []),
                   { date: 'Aug 28, 2026', actor: 'Eleos', event: 'Address change flagged', detail: clientId === 'CL-10001' ? 'Medicaid record must be updated' : 'North County mismatch detected', type: 'flag' as const },
                 ].map((entry, i) => {
@@ -2759,7 +2759,10 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                               }}>{entry.actor}</div>
                             )}
                           </div>
-                          <div style={{ fontSize: 10.5, color: '#a5b4fc', marginTop: 3, paddingLeft: 22 }}>Next step — assigned</div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 3, paddingLeft: 22 }}>
+                            <div style={{ fontSize: 10.5, color: '#a5b4fc' }}>Next step — assigned</div>
+                            {entry.date && <div style={{ fontSize: 11, color: '#6366f1', fontWeight: 500 }}>{entry.date}</div>}
+                          </div>
                         </div>
                       </div>
                     );
