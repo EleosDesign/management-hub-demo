@@ -2946,6 +2946,9 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                     ],
                   };
 
+                  const currentPhaseActions = PHASE_ACTIONS[currentPhase] ?? [];
+                  const effectivePhaseAction = currentPhaseActions.length === 1 ? (phaseAction || currentPhaseActions[0]) : phaseAction;
+
                   const BLOCKED_REASONS = [
                     { label: 'Client cannot log in to portal', ping: 2 },
                     { label: 'Client needs to call Medicaid helpline', ping: 2 },
@@ -3001,8 +3004,8 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                     );
                   }
 
-                  const isSchedulingAction = /schedul/i.test(phaseAction);
-                  const isNoAnswerAction = currentPhase === 'contact' && phaseAction === 'Re-attempted contact — no answer';
+                  const isSchedulingAction = /schedul/i.test(effectivePhaseAction);
+                  const isNoAnswerAction = currentPhase === 'contact' && effectivePhaseAction === 'Re-attempted contact — no answer';
 
                   return (
                     <>
@@ -3035,7 +3038,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                       <div style={{ marginBottom: 12 }}>
                         <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 4 }}>Action taken</div>
                         <select
-                          value={phaseAction}
+                          value={effectivePhaseAction}
                           onChange={e => {
                             const a = e.target.value;
                             setPhaseAction(a);
@@ -3044,7 +3047,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                             setPingDate('');
                             persist({ phaseAction: a, workflowOutcome: null, outcomeReason: '', pingDate: '' });
                           }}
-                          style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid #e2e8f0', borderRadius: 8, padding: '7px 10px', fontSize: 13, color: phaseAction ? '#1e293b' : '#94a3b8', outline: 'none', fontFamily: 'inherit', background: '#fff', appearance: 'none', cursor: 'pointer' }}
+                          style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid #e2e8f0', borderRadius: 8, padding: '7px 10px', fontSize: 13, color: effectivePhaseAction ? '#1e293b' : '#94a3b8', outline: 'none', fontFamily: 'inherit', background: '#fff', appearance: 'none', cursor: 'pointer' }}
                           onFocus={e => { e.target.style.borderColor = '#4f46e5'; e.target.style.boxShadow = '0 0 0 3px #eef2ff'; }}
                           onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = 'none'; }}
                         >
@@ -3077,7 +3080,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                               </div>
                       )}
 
-                      {(!!phaseAction || !!workflowOutcome) && <>
+                      {(!!effectivePhaseAction || !!workflowOutcome) && <>
 
                       {/* Retry reminder — contact phase, no-answer actions */}
                       {isNoAnswerAction && (
@@ -3100,11 +3103,11 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                             )}
 
                             {/* Fast-track to In Session for "Called client — walked through portal together" */}
-                            {currentPhase === 'contact' && phaseAction === 'Called client — walked through portal together' ? (
+                            {currentPhase === 'contact' && effectivePhaseAction === 'Called client — walked through portal together' ? (
                               <button className="ccbhc-primary-btn" style={{ width: '100%' }} onClick={() => {
                                 const completedPhase = PHASES[phaseIndex];
                                 const nextPhase = PHASES[phaseIndex + 1].id;
-                                const entry = { phase: completedPhase.id, label: completedPhase.label, action: phaseAction, note: '', date: TODAY, actor: assignedTo || assignedNavigator || undefined };
+                                const entry = { phase: completedPhase.id, label: completedPhase.label, action: effectivePhaseAction, note: '', date: TODAY, actor: assignedTo || assignedNavigator || undefined };
                                 const newHistory = [entry, ...phaseHistory];
                                 setPhaseHistory(newHistory);
                                 setCurrentPhase(nextPhase); setPhaseAction(''); setNote(''); setPhaseGoal(nextStepAction); setNextStepAction('');
@@ -3246,7 +3249,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                               <div style={{ display: 'flex', gap: 8 }}>
                                   <button className="ccbhc-primary-btn" style={{ flex: 1, background: '#b45309', fontSize: 13 }} onClick={() => {
                                     const completedPhase = PHASES[phaseIndex];
-                                    const actionEntry = { phase: completedPhase.id, label: completedPhase.label, action: phaseAction, note, date: TODAY, actor: assignedTo || assignedNavigator || undefined };
+                                    const actionEntry = { phase: completedPhase.id, label: completedPhase.label, action: effectivePhaseAction, note, date: TODAY, actor: assignedTo || assignedNavigator || undefined };
                                     const outcomeEntry = { phase: 'outcome', label: 'Outcome', action: `Escalate — ${outcomeReason}`, note: note || '', date: TODAY, actor: assignedTo || assignedNavigator || undefined };
                                     const newHistory = [outcomeEntry, actionEntry, ...phaseHistory.filter(h => !(h.phase === 'outcome' && h.action.startsWith('Escalate')))];
                                     setPhaseHistory(newHistory);
@@ -3262,7 +3265,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                                   <button className="ccbhc-primary-btn" style={{ flex: 1 }} onClick={() => {
                                     const completedPhase = PHASES[phaseIndex];
                                     const nextPhase = phaseIndex < PHASES.length - 1 ? PHASES[phaseIndex + 1].id : null;
-                                    const entry = { phase: completedPhase.id, label: completedPhase.label, action: phaseAction, note, date: TODAY, actor: assignedTo || assignedNavigator || undefined };
+                                    const entry = { phase: completedPhase.id, label: completedPhase.label, action: effectivePhaseAction, note, date: TODAY, actor: assignedTo || assignedNavigator || undefined };
                                     const outcomeEntry = { phase: 'outcome', label: 'Outcome', action: 'Confirmed', note: '', date: TODAY, actor: assignedTo || assignedNavigator || undefined };
                                     const newHistory = [outcomeEntry, entry, ...phaseHistory];
                                     setPhaseHistory(newHistory);
@@ -3281,7 +3284,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                                     if (!outcomeReason) return;
                                     const completedPhase = PHASES[phaseIndex];
                                     const nextPhase = phaseIndex < PHASES.length - 1 ? PHASES[phaseIndex + 1] : null;
-                                    const actionEntry = { phase: completedPhase.id, label: completedPhase.label, action: phaseAction, note, date: TODAY, actor: assignedTo || assignedNavigator || undefined };
+                                    const actionEntry = { phase: completedPhase.id, label: completedPhase.label, action: effectivePhaseAction, note, date: TODAY, actor: assignedTo || assignedNavigator || undefined };
                                     const outcomeEntry = { phase: 'outcome', label: 'Outcome', action: `${workflowOutcome.charAt(0).toUpperCase() + workflowOutcome.slice(1)} — ${outcomeReason}`, note: pingDate ? `Auto-ping: ${new Date(pingDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : '', date: TODAY, actor: assignedTo || assignedNavigator || undefined };
                                     const newHistory = [outcomeEntry, actionEntry, ...phaseHistory];
                                     setPhaseHistory(newHistory);
@@ -3303,7 +3306,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                               <button className="ccbhc-primary-btn" style={{ width: '100%' }} onClick={() => {
                                 const completedPhase = PHASES[phaseIndex];
                                 const nextPhase = PHASES[phaseIndex + 1].id;
-                                const entry = { phase: completedPhase.id, label: completedPhase.label, action: phaseAction, note, date: TODAY, actor: assignedTo || assignedNavigator || undefined };
+                                const entry = { phase: completedPhase.id, label: completedPhase.label, action: effectivePhaseAction, note, date: TODAY, actor: assignedTo || assignedNavigator || undefined };
                                 const newHistory = [entry, ...phaseHistory];
                                 setPhaseHistory(newHistory);
                                 setCurrentPhase(nextPhase); setPhaseAction(''); setNote(''); setPhaseGoal(nextStepAction); setNextStepAction('');
