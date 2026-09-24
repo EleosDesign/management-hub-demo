@@ -2692,7 +2692,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                     detail: h.note || '',
                     type: h.phase === 'outcome' ? 'flag' as const : 'outreach' as const,
                   })),
-                  ...(!done && nextStepAction ? [{ date: nextStepDate ? new Date(`${nextStepDate}T${nextStepTime || '09:00'}`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '', actor: assignedTo || assignedNavigator || '', event: nextStepAction, detail: '', type: 'next-step' as const }] : []),
+                  ...(!done && (nextStepAction || (phaseGoal && !phaseAction)) ? [{ date: nextStepDate ? new Date(`${nextStepDate}T${nextStepTime || '09:00'}`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '', actor: assignedTo || assignedNavigator || '', event: nextStepAction || phaseGoal, detail: '', type: 'next-step' as const }] : []),
                   ...(!done ? [{ date: TODAY, actor: '', event: '', detail: '', type: 'today' as const }] : []),
                   { date: 'Aug 28, 2026', actor: 'Eleos', event: 'Address change flagged', detail: clientId === 'CL-10001' ? 'Medicaid record must be updated' : 'North County mismatch detected', type: 'flag' as const },
                 ].map((entry, i) => {
