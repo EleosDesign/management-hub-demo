@@ -2684,7 +2684,7 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                 <div style={{ position: 'absolute', left: 9, top: 22, bottom: 22, width: 2, background: '#c7d2fe', borderRadius: 2 }} />
                 {[
                   ...(resolved ? [{ date: TODAY, actor: 'Care team', event: 'Case marked resolved', detail: 'Address updated with DHS', type: 'flag' as const }] : []),
-                  ...(!done && (nextStepAction || (phaseGoal && !phaseAction)) ? [{ date: nextStepDate ? new Date(`${nextStepDate}T${nextStepTime || '09:00'}`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '', actor: assignedTo || assignedNavigator || '', event: nextStepAction || phaseGoal, detail: '', type: 'next-step' as const }] : []),
+                  ...(nextStepAction || (!done && phaseGoal && !phaseAction) ? [{ date: nextStepDate ? new Date(`${nextStepDate}T${nextStepTime || '09:00'}`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '', actor: assignedTo || assignedNavigator || '', event: nextStepAction || phaseGoal, detail: '', type: 'next-step' as const }] : []),
                   ...(!done ? [{ date: TODAY, actor: '', event: '', detail: '', type: 'today' as const }] : []),
                   ...(assignedNavigator ? [{ date: TODAY, actor: assignedNavigator, event: 'Navigator assigned', detail: assignedNavigator, type: 'outreach' as const }] : []),
                   ...phaseHistory.map(h => ({
@@ -3195,15 +3195,22 @@ function ScheduleServiceDetail({ clientId, clinicianName, onBack, persistedState
                                   <button className="ccbhc-primary-btn" disabled={!outcomeReason} style={{ opacity: outcomeReason ? 1 : 0.4, cursor: outcomeReason ? 'pointer' : 'not-allowed', flex: 1 }} onClick={() => {
                                     if (!outcomeReason) return;
                                     const completedPhase = PHASES[phaseIndex];
+                                    const nextPhase = phaseIndex < PHASES.length - 1 ? PHASES[phaseIndex + 1] : null;
                                     const actionEntry = { phase: completedPhase.id, label: completedPhase.label, action: phaseAction, note, date: TODAY, actor: assignedTo || assignedNavigator || undefined };
                                     const outcomeEntry = { phase: 'outcome', label: 'Outcome', action: `${workflowOutcome.charAt(0).toUpperCase() + workflowOutcome.slice(1)} — ${outcomeReason}`, note: pingDate ? `Auto-ping: ${new Date(pingDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : '', date: TODAY, actor: assignedTo || assignedNavigator || undefined };
                                     const newHistory = [outcomeEntry, actionEntry, ...phaseHistory];
                                     setPhaseHistory(newHistory);
-                                    setDone(true);
-                                    persist({ done: true, workflowOutcome, outcomeReason, pingDate, phaseHistory: newHistory });
-                                    const statusMap: Record<string, string> = { blocked: 'Blocked', waiting: 'Waiting', closed: 'Closed' };
-                                    onStatusChange?.(clientId, statusMap[workflowOutcome]);
-                                  }}>Confirm outcome</button>
+                                    if (nextPhase && workflowOutcome !== 'closed') {
+                                      setCurrentPhase(nextPhase.id); setPhaseAction(''); setNote(''); setWorkflowOutcome(null); setPhaseGoal(nextStepAction); setNextStepAction('');
+                                      persist({ currentPhase: nextPhase.id, phaseAction: '', note: '', workflowOutcome, outcomeReason, pingDate, phaseHistory: newHistory, phaseGoal: nextStepAction, nextStepAction: '' });
+                                      onStatusChange?.(clientId, `${nextPhase.label} — in progress`);
+                                    } else {
+                                      setDone(true);
+                                      persist({ done: true, workflowOutcome, outcomeReason, pingDate, phaseHistory: newHistory });
+                                      const statusMap: Record<string, string> = { blocked: 'Blocked', waiting: 'Waiting', closed: 'Closed' };
+                                      onStatusChange?.(clientId, statusMap[workflowOutcome]);
+                                    }
+                                  }}>Confirm outcome{phaseIndex < PHASES.length - 1 && workflowOutcome !== 'closed' ? ` & advance to ${PHASES[phaseIndex + 1]?.label}` : ''}</button>
                                 )}
                                 <button style={selectBtn('Clear', '#475569', '#fff', '#e2e8f0')} onClick={() => { setWorkflowOutcome(null); setOutcomeReason(''); setPingDate(''); }}>Clear</button>
                               </div>
