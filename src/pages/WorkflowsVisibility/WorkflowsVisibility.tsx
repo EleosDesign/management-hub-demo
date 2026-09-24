@@ -1031,12 +1031,13 @@ function CaseloadView({ onClientClick, routedClients, clientStatuses }: { onClie
                 <div className="ccbhc-table-wrap">
                   <table className="ccbhc-table">
                     <colgroup>
-                      <col style={{ width: '13%' }} />
-                      <col style={{ width: '15%' }} />
-                      <col style={{ width: '24%' }} />
                       <col style={{ width: '12%' }} />
-                      <col style={{ width: '11%' }} />
-                      <col style={{ width: '25%' }} />
+                      <col style={{ width: '13%' }} />
+                      <col style={{ width: '20%' }} />
+                      <col style={{ width: '10%' }} />
+                      <col style={{ width: '10%' }} />
+                      <col style={{ width: '13%' }} />
+                      <col style={{ width: '22%' }} />
                     </colgroup>
                     <thead>
                       <tr>
@@ -1047,6 +1048,7 @@ function CaseloadView({ onClientClick, routedClients, clientStatuses }: { onClie
                           { label: 'Last service',   col: 'lastService' },
                           { label: 'Plan ends',      col: 'planEnds'    },
                           { label: 'Status',         col: 'status'      },
+                          { label: 'Next step',      col: null          },
                         ] as { label: string; col: FlaggedSortCol | null }[]).map(({ label, col }) => (
                           <th
                             key={label}
@@ -1074,15 +1076,20 @@ function CaseloadView({ onClientClick, routedClients, clientStatuses }: { onClie
                           <td>{client.lastServiceDate}</td>
                           <td>{client.treatmentPlanEnd}</td>
                           <td>
+                            <div className="ccbhc-wf-status-parts">
+                              {(STATUS_PARTS[effectiveStatus(client) ?? 'Flagged'] ?? STATUS_PARTS['Flagged']).map((part, pi) => (
+                                <span key={pi} className={`ccbhc-wf-part ccbhc-wf-part--${part.variant}`}>{part.label}</span>
+                              ))}
+                            </div>
+                          </td>
+                          <td>
                             {(() => {
                               const ws = effectiveStatus(client);
                               const info = getStatusInfo(ws);
                               return (
-                                <div style={{ lineHeight: 1.4 }}>
-                                  <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>{info.last}</div>
-                                  <div style={{ fontSize: 12, color: '#1e293b', fontWeight: 500 }}>
-                                    <span style={{ color: '#94a3b8', fontWeight: 400 }}>{clinician.name.split(' ')[0]}: </span>{info.next}
-                                  </div>
+                                <div style={{ lineHeight: 1.5 }}>
+                                  <div style={{ fontSize: 12, color: '#1e293b', fontWeight: 500 }}>{info.next}</div>
+                                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 1 }}>{clinician.name.split(' ')[0]}</div>
                                 </div>
                               );
                             })()}
@@ -1090,7 +1097,7 @@ function CaseloadView({ onClientClick, routedClients, clientStatuses }: { onClie
                         </tr>
                       ))}
                       {allRows.length === 0 && (
-                        <tr><td colSpan={6} style={{ padding: '16px', color: '#4b5563' }}>No clients to show.</td></tr>
+                        <tr><td colSpan={7} style={{ padding: '16px', color: '#4b5563' }}>No clients to show.</td></tr>
                       )}
                     </tbody>
                   </table>
